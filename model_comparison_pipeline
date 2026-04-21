@@ -1,0 +1,42 @@
+// Model Comparison Architecture
+digraph {
+	dpi=300 rankdir=LR size="10,10"
+	Input [label="Chest X-Ray Image" fillcolor=lightblue shape=box style=filled]
+	subgraph cluster_models {
+		label="Deep Learning Backbones (Feature Extractors)" style=dashed
+		ResNet50 [label=ResNet50 fillcolor=lightgrey shape=component style=filled]
+		VGG16 [label=VGG16 fillcolor=lightgrey shape=component style=filled]
+		VGG19 [label=VGG19 fillcolor=lightgrey shape=component style=filled]
+		DenseNet121 [label=DenseNet121 fillcolor=lightgrey shape=component style=filled]
+		DenseNet169 [label=DenseNet169 fillcolor=lightgrey shape=component style=filled]
+	}
+	Features [label="Feature Vectors
+(Global Avg Pooling)" fillcolor=orange shape=cylinder style=filled]
+	subgraph cluster_classifiers {
+		label=Classifiers style=dashed
+		SVM [label="SVM (RBF)" fillcolor=lightgreen shape=ellipse style=filled]
+		RF [label="Random Forest" fillcolor=lightgreen shape=ellipse style=filled]
+		kNN [label="k-NN" fillcolor=lightgreen shape=ellipse style=filled]
+		NB [label="Naive Bayes" fillcolor=lightgreen shape=ellipse style=filled]
+	}
+	Output [label="Diagnosis
+(Pneumonia / Normal)" fillcolor=gold shape=doublecircle style=filled]
+	Input -> ResNet50
+	ResNet50 -> Features
+	Input -> VGG16
+	VGG16 -> Features
+	Input -> VGG19
+	VGG19 -> Features
+	Input -> DenseNet121
+	DenseNet121 -> Features
+	Input -> DenseNet169
+	DenseNet169 -> Features
+	Features -> SVM
+	SVM -> Output
+	Features -> RF
+	RF -> Output
+	Features -> kNN
+	kNN -> Output
+	Features -> NB
+	NB -> Output
+}

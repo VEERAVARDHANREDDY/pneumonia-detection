@@ -1,0 +1,3292 @@
+
+
+--- START OF pone.0256630.pdf ---
+
+
+[Page 1]
+RESEA RCH ARTICL E
+Pneumonia detection in chest X-ray images
+using an ensemble of deep learning models
+Rohit Kundu
+ID
+1
+, Ritacheta Das
+ID
+2
+, Zong Woo Geem
+ID
+3
+*, Gi-Tae Han
+ID
+3
+, Ram Sarkar
+ID
+2
+1 Department of Electrical Engineeri ng, Jadavpur University , Kolkata, India, 2 Department of Comput er
+Science & Engineeri ng, Jadavpur University, Kolkata, India, 3 College of IT Convergen ce, Gachon Universit y,
+Seongnam , South Korea
+* geem@ gachon.ac.kr
+Abstract
+Pneumonia is a respiratory infection caused by bacteria or viruses; it affects many individu-
+als, especially in developing and underdeveloped nations, where high levels of pollution,
+unhygienic living conditions, and overcrowding are relatively common, together with inade-
+quate medical infrastructure. Pneumonia causes pleural effusion, a condition in which fluids
+fill the lung, causing respiratory difficulty. Early diagnosis of pneumonia is crucial to ensure
+curative treatment and increase survival rates. Chest X-ray imaging is the most frequently
+used method for diagnosing pneumonia. However, the examination of chest X-rays is a
+challenging task and is prone to subjective variability. In this study, we developed a com-
+puter-aided diagnosis system for automatic pneumonia detection using chest X-ray images.
+We employed deep transfer learning to handle the scarcity of available data and designed
+an ensemble of three convolutional neural network models: GoogLeNet, ResNet-18, and
+DenseNet-121. A weighted average ensemble technique was adopted, wherein the weights
+assigned to the base learners were determined using a novel approach. The scores of four
+standard evaluation metrics, precision, recall, f1-score, and the area under the curve, are
+fused to form the weight vector, which in studies in the literature was frequently set experi-
+mentally, a method that is prone to error. The proposed approach was evaluated on two
+publicly available pneumonia X-ray datasets, provided by Kermany et al. and the Radiologi-
+cal Society of North America (RSNA), respectively, using a five-fold cross-validation
+scheme. The proposed method achieved accuracy rates of 98.81% and 86.85% and sensi-
+tivity rates of 98.80% and 87.02% on the Kermany and RSNA datasets, respectively. The
+results were superior to those of state-of-the-art methods and our method performed better
+than the widely used ensemble techniques. Statistical analyses on the datasets using
+McNemar’s and ANOVA tests showed the robustness of the approach. The codes for the
+proposed work are available at https://github.c om/Rohit-Kundu/E nsemble-Pneumonia-
+Detection.
+PLOS ONE
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 1 / 29
+a1111111111
+a1111111111
+a1111111111
+a1111111111
+a1111111111
+OPEN ACCESS
+Citation: Kundu R, Das R, Geem ZW, Han G-T,
+Sarkar R (2021) Pneumonia detection in chest X-
+ray images using an ensembl e of deep learning
+models. PLoS ONE 16(9): e0256630. https://do i.
+org/10.1371 /journal.pone. 0256630
+Editor: Robertas Damas ˇ evičius, Politechnik a
+Slaska, POLAND
+Received: June 19, 2021
+Accepted: August 12, 2021
+Published: Septembe r 7, 2021
+Copyright: © 2021 Kundu et al. This is an open
+access article distributed under the terms of the
+Creative Commons Attribution License, which
+permits unrestricte d use, distribu tion, and
+reproduction in any medium, provided the original
+author and source are credited.
+Data Availabilit y Statement: The relevant codes
+for the proposed approach are available on GitHub
+(https://git hub.com/Rohit -Kundu/E nsemble-
+Pneumoni a-Detection). The two datasets used in
+this study are publicly accessible and available on
+Kaggle: 1. Kermany dataset (https://w ww.kaggle.
+com/paulti mothymoone y/chest-xra y-pneumoni a).
+2. RSNA dataset (https://www .kaggle.com/c /rsna-
+pneumonia- detection- challenge).
+Funding: Z.W.G. was supporte d by the Nationa l
+Research Foundation of Korea (NRF) grant funded
+[Page 2]
+Introduction
+Pneumonia is an acute pulmonary infection that can be caused by bacteria, viruses, or fungi
+and infects the lungs, causing inflammation of the air sacs and pleural effusion, a condition
+in which the lung is filled with fluid. It accounts for more than 15% of deaths in children
+under the age of five years [1]. Pneumonia is most common in underdeveloped and develop-
+ing countries, where overpopulation, pollution, and unhygienic environmental conditions
+exacerbate the situation, and medical resources are scanty. Therefore, early diagnosis and
+management can play a pivotal role in preventing the disease from becoming fatal. Radiologi-
+cal examination of the lungs using computed tomography (CT), magnetic resonance imaging
+(MRI), or radiography (X-rays) is frequently used for diagnosis. X-ray imaging constitutes a
+non-invasive and relatively inexpensive examination of the lungs. Fig 1 shows an example
+shows an example of a pneumonic and a healthy lung X-ray. The white spots in the pneu-
+monic X-ray (indicated with red arrows), called infiltrates, distinguish a pneumonic from a
+healthy condition. However, chest X-ray examinations for pneumonia detection are prone to
+subjective variability [2, 3]. Thus, an automated system for the detection of pneumonia is
+required. In this study, we developed a computer-aided diagnosis (CAD) system that uses an
+ensemble of deep transfer learning models for the accurate classification of chest X-ray
+images.
+Deep learning is an important artificial intelligence tool, which plays a crucial role in
+solving many complex computer vision problems [5, 6]. Deep learning models, specifically
+convolutional neural networks (CNNs), are used extensively for various image classification
+problems. However, such models perform optimally only when they are provided with a
+large amount of data. For biomedical image classification problems, such a vast amount of
+labeled data is difficult to acquire because it requires that expert doctors classify each image,
+which is an expensive and time-consuming task. Transfer learning is a work-around to sur-
+mount this obstacle. In this technique, to solve a problem that involves a small dataset, a
+model trained on a large dataset is re-used and the network weights determined in this
+model are applied. CNN models trained on a large dataset such as ImageNet [7], which con-
+sists of more than 14 million images, are frequently used for biomedical image classification
+tasks.
+Ensemble learning is a popular strategy in which the decisions of multiple classifiers are
+fused to obtain the final prediction for a test sample. It is performed to capture the discrimina-
+tive information from all the base classifiers, and thus, results in more accurate predictions.
+Some of the ensemble techniques that were most frequently used in studies in the literature are
+average probability, weighted average probability, and majority voting. The average probabil-
+ity-based ensemble assigns equal priority to each constituent base learner. However, for a par-
+ticular problem, a certain base classifier may be able to capture information better than others.
+Thus, a more effective strategy is to assign weights to all the base classifiers. However, for
+ensuring the enhanced performance of the ensemble, the value of the weights assigned to each
+classifier is the most essential factor. Most approaches set this value based on experimental
+results. In this study, we devised a novel strategy for weight allocation, where four evaluation
+metrics, precision, recall, f1-score, and area under receiver operating characteristics (ROC)
+curve (AUC), were used to assign the optimal weight to three base CNN models, GoogLeNet,
+ResNet-18, and DenseNet-121. In studies in the literature, in general, only the classification
+accuracy was considered for assigning weights to the base learners [8], which may be an inade-
+quate measure, in particular when the datasets are class-imbalanced. Other metrics may pro-
+vide better information for prioritizing the base learners. The overall workflow of the
+proposed ensemble framework is presented in Fig 2.
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 2 / 29
+by the Korean governme nt (MSIT)
+(2020R1A 2C1A01011131) .
+Competing interests : The authors have declared
+that no competing interests exist.
+Abbreviati ons: Acc, Accuracy; AI, Artificial
+Intelligence ; AUC, Area Under the Curve; CAD,
+Computer- Aided Diagnosi s; CNN, Convolutio nal
+Neural Network; F1, F1-Score; FCL, Fully
+Connected Layer; FM, Feature Map; GAG, Globally
+Averaged Gradients; GAP, Global Average Pooling;
+Grad-CAM, Gradient-we ighted Class Activation
+Maps; Pre, Precision; Rec, Recall; ReLU, Rectified
+Linear Unit; ROC, Receiver Operating
+Characteris tics; RSNA, Radiologica l Society of
+North America.
+[Page 3]
+Related work
+Pneumonia detection using chest X-rays has been an open problem for many years [9, 15], the
+main limitation being the scarcity of publicly available data. Traditional machine learning
+methods have been explored extensively. Chandra et al. [16] segmented the lung regions from
+chest X-ray images and extracted eight statistical characteristics from these regions, which they
+used to classify them. They implemented five traditional classifiers: multi-layer perceptron
+(MLP), random forest, sequential minimal optimization (SMO), classification via regression,
+and logistic regression. They evaluated their method on 412 images and achieved a 95.39%
+Fig 1. Examples of two X-ray plates that display (a) a healthy lung and (b) a pneumo nic lung. The red arrows in (b)
+indicate white infiltrates , a distinguis hing feature of pneumonia . The images were taken from the Kermany dataset [4].
+https://d oi.org/10.1371/j ournal.pon e.0256630.g0 01
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 3 / 29
+[Page 4]
+Fig 2. Represen tation of the proposed pneumonia detection framew ork. Pre = Precision score, Rec = Recall score, F1 = F1-score, AUC =
+AUC score, and A
+(i)
+= {Pre
+i
+, Rec
+i
+, F1
+i
+, AUC
+i
+}; w
+(i)
+is the weight genera ted for the i
+th
+base learner to compute the ensemble, p
+ðiÞ
+j
+is the
+probability score for the j
+th
+sample by the i
+th
+classifier, and ens
+j
+is the fused probability score for the j
+th
+sample; and the argmax function
+returns the position having the highest value in a 1D array, i.e., in this case it generates the predicted class of the sample .
+https://doi.org/10 .1371/journal.p one.0256630. g002
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 4 / 29
+[Page 5]
+accuracy rate using the MLP classifier. Kuo et al. [17] used 11 features to detect pneumonia in
+185 schizophrenia patients. They applied these features in a large number of regression and
+classification models, such as decision trees, support vector machines, and logistic regression,
+and compared the results of the models. They achieved the highest accuracy rate, 94.5%, using
+a decision tree classifier; the other models fell short by large margins. Similarly, Yue et al. [18]
+used 6 features to detect pneumonia in chest CT scan images of 52 patients; the best AUC
+value they achieved was 97%. However, these methods cannot be generalized and were evalu-
+ated on small datasets.
+In contrast to machine learning algorithms, for which handcrafted features need to be
+extracted and selected for classification or segmentation [27, 28], deep learning-based methods
+perform end-to-end classification [29, 30], where the relevant and informative features are
+automatically extracted from the input data and classified. CNNs are preferred for image data
+classification because they automatically extract translationally invariant features through the
+convolution of the input image and filters. CNNs are translationally invariant and perform
+better than machine learning or traditional image processing methods in image classification
+tasks and thus are widely used by researchers.
+Sharma et al. [19] and Stephen et al. [20] devised simple CNN architectures for the classifi-
+cation of pneumonic chest X-ray images. They used data augmentation to compensate for the
+scarcity of data. Sharma et al. obtained a 90.68% and Stephen et al. a 93.73% accuracy rate on
+the dataset provided by Kermany et al. [4], hereafter called the Kermany dataset. Data augmen-
+tation, however, provides only a limited amount of new information from which the CNNs
+can learn and thus may not significantly boost their performance. Rajpukar et al. [14] used the
+DenseNet-121 CNN model for pneumonia classification but achieved only a 76.8% f1-score
+for classification. They suspected that the unavailability of patient history was a major cause
+for the inferior performance of both their deep learning model and the radiologists with which
+they compared the performance of their method.
+Janizek et al. [21] proposed a framework based on adversarial optimization to remove the
+dependency of models on the source of the datasets and produce robust predictions. They
+obtained a 74.7% AUC score in the source domain and a 73.9% AUC score in the target
+domain. Zhang et al. [22] proposed a confidence-aware module for anomaly detection in lung
+X-ray images, posing the detection task as a one-class problem (determining only the anoma-
+lies). They achieved an 83.61% AUC score on their dataset. Tuncer et al. [23] used a machine
+learning-based method in which they applied the fuzzy tree transformation to the images, fol-
+lowed by an exemplar division. Then, they extracted features using a multikernel local binary
+pattern and classified the samples using traditional classifiers. They evaluated the method on a
+small dataset consisting of COVID-19 and pneumonia samples and showed that it achieved a
+97.01% accuracy rate.
+To solve the data scarcity problem in biomedical image classification tasks, transfer learn-
+ing, wherein knowledge gained from a large dataset is used to fine-tune the model on a current
+small dataset, is currently a frequently used approach. Recently, Rahman et al. [10], Liang et al.
+[11], Ibrahim et al. [12], and Zubair et al. [13] applied purely transfer learning approaches in
+which different CNN models pre-trained on ImageNet [7] data are used for pneumonia classi-
+fication. Table 1 tabulates the development of the state of the art for the pneumonia detection
+problem.
+Most state-of-the-art deep learning methods for pneumonia detection focus on the use of a
+single CNN model. Ensemble learning [31, 32] allows the decisions generated by multiple CNN
+models to be fused, thus effectively incorporating in the ensemble model the salient features of
+all its base models, capturing complementary information from the different classifiers, and
+allowing a more robust decision. This paradigm has been seldom explored in relation to the
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 5 / 29
+[Page 6]
+pneumonia detection task. Jaiswal et al. [24] used a mask region-based CNN for the detection
+of pneumonia traces via segmentation, wherein they used an ensemble model consisting of
+ResNet-50 and ResNet-101 for image thresholding. Gabruseva et al. [25] proposed a deep learn-
+ing framework for the localization of pulmonary opacity, which was based on a single-shot
+Table 1. Existing methods for pneumonia detection.
+Method Approach Merits Demerits
+Albah li et al.
+[9]
+• Transfer Learning using
+InceptionRes Net-V2
+Reuse of models pretrain ed on a large
+dataset
+Oversimpl ified for a complex pattern recognition task;
+Performan ce obtained is poor and not fit for practica l use
+Rahman et al.
+[10]
+• Transfe r Learning using DenseNet-2 01
+Liang et al.
+[11]
+• Transfe r learning using ResNet-50 pre-
+trained on ChestX-ray 14 dataset
+Ibrahim et al.
+[12]
+• Transfer learning using AlexNet
+Zubair et al.
+[13]
+• Transfe r learning using VGG-16
+Rajpukar
+et al. [14]
+• Transfer learning using DenseNet -121
+Albah li et al.
+[15]
+• Used generative adversarial networks to
+generate synthetic data.
+• Classificat ion using ResNet-152
+Generatio n of synthetic data to balance the
+classes of the data because medical data are
+scarce
+Classification results (41% accurac y rate) are not fit for
+practical use
+Chandra
+et al. [16]
+• Segmentation of lung X-rays using image
+processing
+• Extraction and classification of eight
+statistical features
+Segmentat ion of lungs before classific ation
+allows localizati on of the disease
+The use of handcraft ed features limits its ability to
+perform in complex pattern recognition tasks; Evaluatio n
+on a small dataset (412 images) cannot be generalized
+Kuo et al.
+[17]
+• Used 11 features from patient data to fit
+tradition al classifie rs
+Use of 10-fold cross validation with 3 repeats
+avoids overfitting
+Patient data are often private and not publicly available to
+fit to classific ation models
+Yue et al. [18] • Segmente d lung lobes using U-Net
+• Extract ed and classified radiomic features
+from CT-sca n images
+Segmen tation before classification helps
+extract importan t features for radiolog ists
+and allows localizati on of the disease
+Method evaluated on a small dataset (72 lesion segments)
+and thus difficult to generalize
+Sharma et al.
+[19]
+• Devised a CNN model for classific ation of
+X-ray images
+Automat ic feature learning for complex tasks Simple linearly progressing CNN model increases
+computatio n cost without providing strong boost to
+performan ce
+Stephen et al.
+[20]
+• Developed a simple seven-layer CNN
+model for classific ation of X-ray images
+Janizek et al.
+[21]
+• Developed a deep learning framew ork
+based on adversarial optimiza tion
+Adversarial optimiza tion removed
+dependen cy on the source of the dataset and
+view of the X-rays for classification
+Results (AUC 74.7%) are not fit for deployment in the
+field
+Zhang et al.
+[22]
+• Develop ed a confidence -aware module
+for anomaly detectio n in lung X-ray images
+Posing the detection task as a one-class
+problem helped improve the model
+performance
+The sensitivi ty obtained on the dataset was too low
+(71.70%) for practical use
+Tuncer et al.
+[23]
+• Applied fuzzy tree transforma tion to X-
+ray images
+• Extracted local features for classific ation
+using an ensemble of traditional classifiers
+Generation of three different feature images
+improves the model performance
+Handcraft ed feature extraction limits performance in
+complex pattern recognition tasks; Evaluation on a small
+dataset cannot be generalized
+Jaiswal et al.
+[24]
+• Developed a mask region-ba sed CNN for
+segmentat ion
+• Used an ensemble model for image
+thresholdin g
+Use of threshold value in backgroun d boosts
+the performance
+An irregular trend was observed, where results of the
+training set were lower than those of the testing set
+Gabrusev a
+et al. [25]
+• Localize d pulmonar y opacity based on a
+single-shot detecto r
+• Used a snapsho t ensemble model for
+segmentat ion
+One-shot detector alleviates the problem of
+scarcity of data
+Irregular trend of validation loss over epochs during
+model training
+Pan et al. [26] • Used an ensem ble of Inception- ResNet
+v2, XceptionNe t, and DenseNet -169 for
+boundi ng box prediction
+Ensemble learning allows the fusion of
+salient propertie s of all its base learners
+Pan et al. [26] suspect that their model evaluated on only
+one dataset may not generaliz e over data acquired from a
+different source
+https://do i.org/10.1371/j ournal.pone .0256630.t001
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 6 / 29
+[Page 7]
+detector RetinaNet with Se-ResNext101 encoders. They executed an ensemble of several check-
+points during the training phase (snapshot ensembling) and achieved a mean average precision
+(mAP) of 0.26 over several intersection over union thresholds, one of the best results in the
+Radiological Society of North America (RSNA) Pneumonia Detection Challenge. On the same
+challenge, Pan et al. [26] used an ensemble of the Inception-ResNet v2, XceptionNet, and Den-
+seNet-169 models for pneumonia detection and obtained the best result in the challenge, an
+mAP value of 0.33. However, ensemble models have not been used for classification tasks in the
+pneumonia detection problem to the best of our knowledge, and, for the first time in this
+domain, we adopted ensemble learning in this study for the classification of lung X-rays into
+“Pneumonia” and “Normal” classes. Three state-of-the-art CNN models with transfer learning,
+GoogLeNet, ResNet-18, and DenseNet-121, were used to form the ensemble using a weighted
+average probability technique, in which the weights are allocated using a novel approach.
+Motivation and contributions
+As previously mentioned, pneumonia affects a large number of individuals, especially children,
+mostly in developing and underdeveloped countries characterized by risk factors such as over-
+crowding, poor hygienic conditions, and malnutrition, coupled with the unavailability of
+appropriate medical facilities. Early diagnosis of pneumonia is crucial to cure the disease
+completely. Examination of X-ray scans is the most common means of diagnosis, but it
+depends on the interpretative ability of the radiologist and frequently is not agreed upon by
+the radiologists. Thus, an automatic CAD system with generalizing capability is required to
+diagnose the disease. To the best of our knowledge, most previous methods in the literature
+focused on developing a single CNN model for the classification of pneumonia cases, and the
+use of the ensemble learning paradigm in this classification task has not been explored. How-
+ever, the ensemble learning model incorporates the discriminative information from all the
+constituent base learners, allowing it to make superior predictions, and thus was implemented
+in this study. To handle the low amount of available biomedical data, transfer learning models
+were used as base learners, the decision scores of which were ensembled.
+The main contributions of this study are as follows.
+1. An ensemble framework, proposed for boosting the performance of the base CNN learners
+in pneumonia classification, was developed. For this purpose, a weighted average ensemble
+technique was adopted.
+2. The weights assigned to the classifiers were determined by fusing four evaluation metrics:
+precision, recall, f1-score, and AUC. Instead of setting the weights based solely on the accu-
+racy of classifiers or according to the results of experiments, we used a hyperbolic tangent
+function.
+3. The proposed model was evaluated on two publicly available chest X-ray datasets, the Ker-
+many dataset [4] and the RSNA Pneumonia Detection Challenge [33] dataset, using the
+five-fold cross-validation setting. The results are superior to those of state-of-the-art meth-
+ods, indicating the viability of the method for use in the practical field.
+Proposed method
+In this study, we designed an ensemble framework of three classifiers (Fig 2), GoogLeNet [34],
+ResNet-18 [35], and DenseNet-121 [36], using a weighted average ensemble scheme wherein
+the weights allocated to the classifiers are generated using a novel scheme, as explained in
+detail in the following sections.
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 7 / 29
+[Page 8]
+GoogLeNet
+The GoogLeNet architecture proposed by Szegedy et al. [34] is a 22-layer deep network con-
+sisting of “inception modules,” instead of uniformly progressive layers. An inception block
+accommodates a large number of units at each stage by hosting parallel convolution and pool-
+ing layers, resulting in an uncontrolled computational complexity because of the increased
+number of parameters. To control the computational complexity, the GoogLeNet model uses
+inception blocks with dimension reduction, as shown in Fig 3(b), rather than the naive incep-
+tion block (Fig 3(a)) used in [37]. The performance of GoogLeNet, in which the inception
+block was introduced, proves that an optimal sparse architecture built from the available dense
+building blocks improves the performance of artificial neural networks for computer vision
+tasks. The architecture of the GoogLeNet model is presented in Fig 4.
+Fig 3. Inception modules in the GoogLeN et archite cture. (a) The naive inception block that is replaced by (b) the
+dimension reduction inception block in the GoogLeNe t architectur e to improv e computat ional efficiency.
+https://d oi.org/10.1371/j ournal.pon e.0256630.g0 03
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 8 / 29
+[Page 9]
+Fig 4. Architectur e of the GoogLeNe t model used in this study. The inception block is shown in Fig 3(b).
+https://d oi.org/10.1371/j ournal.pon e.0256630.g0 04
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 9 / 29
+[Page 10]
+ResNet-18
+The ResNet-18 model proposed by He et al. [35] is based on a residual learning framework,
+which increases the efficiency of deep network training. The residual blocks in the ResNet
+models facilitate the optimization of the overall network, which in turn improves model accu-
+racy, unlike the original unreferenced mapping in monotonically progressive convolutions.
+These residuals or “skip connections” perform identity mapping, which neither adds parame-
+ters nor increases the computational complexity. The architecture of the ResNet-18 model is
+presented in Fig 5.
+DenseNet-121
+The DenseNet architectures proposed by Huang et al. [36] provide a rich feature
+representation while being computationally efficient. The primary reason is that, in each
+layer of the DenseNet model, the feature maps in the current layer are concatenated with
+those from all the preceding layers, as shown in Fig 6. Because fewer channels are accom-
+modated in the convolutional layers, the number of trainable parameters is diminished,
+and thus, the model is computationally efficient. Furthermore, the concatenation of the
+feature maps from the previous layers with the current layer enhances the feature
+representation.
+The values of the hyperparameters used for training the learning algorithms (base learners)
+were set empirically and are shown in Table 2.
+Proposed ensemble scheme
+The ensemble learning model helps incorporate the discriminative information of all its
+constituent models, and thus, its predictions are superior to those of any of its constituent
+base learners. Weighted average ensembling is a powerful classifier fusion mechanism. How-
+ever, the choice of the weights to be allocated to the respective base learners plays a pivotal
+role in ensuring the success of the ensemble. Most approaches in the literature set the
+weights experimentally or based solely on the accuracy of the classifier. However, this may
+not be a good measure when a class imbalance exists in the dataset. The use of other evalua-
+tion measures, such as precision, recall (sensitivity), f1-score, and AUC, may provide rela-
+tively robust information for determining the priority of the base learners. To this end, in
+this study, we devised a novel strategy for weight allocation, which is explained in the
+following.
+First, the probability scores obtained during the training phase by the base learners are uti-
+lized to calculate the weights assigned to each base learner using the proposed strategy. These
+generated weights are used in the formation of an ensemble trained on the test set. This strat-
+egy is implemented to ensure that the test set remains independent for predictions. The predic-
+tions of the i
+th
+model ( ^y
+i
+) are generated and compared with the true labels (y) to generate the
+corresponding precision score (pre
+(i)
+), recall score (rec
+(i)
+), f1-score (f1
+(i)
+), and AUC score
+(AUC
+(i)
+). Assume that this forms an array A
+(i)
+= {pre
+(i)
+, rec
+(i)
+, f1
+(i)
+, AUC
+(i)
+}. The weight (w
+(i)
+)
+assigned to each classifier is then computed using the hyperbolic tangent function, as shown in
+Eq 1. The range of the hyperbolic tangent function is [0, 0.762] because x represents an evalua-
+tion metric, the value of which is in the range [0, 1]. It monotonically increases in this range;
+thus, if the value of a metric x is high, the tanh function rewards it by assigning to it a high
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 10 / 29
+[Page 11]
+Fig 5. Architectur e of the ResNet-18 model used in this study.
+https://d oi.org/10.1371/j ournal.pon e.0256630.g0 05
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 11 / 29
+[Page 12]
+priority; otherwise, the function penalizes it.
+w
+ðiÞ
+¼
+X
+x2A
+ðiÞ
+tan h ðxÞ
+¼
+X
+x2A
+ðiÞ
+e
+x
+  e
+  x
+e
+x
+þ e
+  x
+ð1Þ
+These weights (w
+(i)
+) computed by Eq 1 are multiplied by the decision scores of the corre-
+sponding base learners to compute the weighted average probability ensemble, as shown in Eq
+2, where the probability array (for a binary class dataset) of the j
+th
+test sample by the i
+th
+base
+classifier is p
+ðiÞ
+j
+¼ fa; 1   ag, where a � 1 and the ensemble probability for the sample is
+ensemble_prob
+j
+= {b, 1 − b}.
+ense mbl e pro b
+j
+¼
+P
+i
+w
+ðiÞ
+� p
+ðiÞ
+j
+P
+i
+w
+ðiÞ
+ð2Þ
+Finally, the class predicted by the ensemble is computed by Eq 3, where prediction
+j
+denotes
+the predicted class of the sample.
+pre dic tion
+j
+¼ arg maxðense mble pr ob
+j
+Þ ð3Þ
+Fig 6. Basic architectur e of the DenseNet convolut ional neural network model.
+https://doi. org/10.1371/j ournal.pone .0256630.g006
+Table 2. Hyperpar ameters used for training the convolut ional neural network base learners.
+Hyperp arameter Value
+Optimizer Adam
+Loss Function Cross Entropy
+Initial Learning Rate 0.0001
+Learning Rate Scheduler ReduceLRO nPlateau
+No. of Epochs 30
+https://d oi.org/10.1371/j ournal.pon e.0256630.t00 2
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 12 / 29
+[Page 13]
+Results and discussion
+In this section, we report the evaluation results of the proposed method. Two publicly available
+pneumonia chest X-ray datasets were used. The first dataset, the Kermany dataset [4], consists
+of 5856 chest X-ray images from a large population of both adults and children, unevenly dis-
+tributed among the classes “Pneumonia” and “Normal.” The second dataset was provided by
+the RSNA [33] and was posed as a Kaggle challenge for pneumonia detection. The distribution
+of images in the two datasets is provided in Table 3. The description of images in the training
+and testing sets of each fold of the 5-fold cross-validation scheme adopted in this study are also
+shown in the table. Furthermore, the implications of the obtained results are discussed. A com-
+parative evaluation was conducted to demonstrate the superiority of the proposed method
+over other models and frequently used ensemble techniques published in the literature.
+Evaluation metrics
+To evaluate the proposed ensemble method on the two pneumonia datasets, four standard
+evaluation metrics were used: accuracy (Acc), precision (Pre), recall (Rec), and f1-score (F1).
+To define these evaluation metrics, first, we define the terms “True Positive,” “False Positive,”
+“True Negative,” and “False Negative.”
+For a binary classification task, suppose the two classes in the dataset are called the “posi-
+tive” and the “negative” class. The aforementioned terms can then be defined as follows.
+• True Positive (TP) refers to a sample belonging to the positive class, being correctly classified
+by a model.
+• False Positive (FP) refers to a sample belonging to the negative class, being incorrectly classi-
+fied as belonging to the positive class.
+• True Negative (TN) refers to a sample belonging to the negative class, being correctly classi-
+fied by the model.
+• False Negative (FN) refers to a sample belonging to the positive class, being incorrectly classi-
+fied as belonging to the negative class.
+Table 3. Descriptio n of images in the training and testing sets in each fold of five-fold cross-valida tion in the two datasets used in this study.
+Dataset Division Class No. of Images Size of Images (Range) Size of Resized Images
+Kermany Train Normal 1267 (127×384 ×3)—(2713×251 7×3) 224×224×3
+Pneumonia 3419
+Test Normal 316 (189×490 ×3)—(2458×272 0×3) 224×224×3
+Pneumonia 854
+Total Images 5856
+RSNA Train Lung Opacity 16488 (1024×1024× 3) 224×224×3
+No Lung Opacity 4801
+Test Lung Opacity 4111 (1024×1024× 3) 224×224×3
+No Lung Opacity 1201
+Total Images 26601
+https://do i.org/10.1371/j ournal.pone .0256630.t003
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 13 / 29
+[Page 14]
+Now, the four evaluation metrics can be defined as
+Acc ¼
+TP þ TN
+TP þ FP þ TN þ FN
+ð4Þ
+Pre ¼
+TP
+TP þ FP
+ð5Þ
+Rec ðor Sens iti vit yÞ ¼
+TP
+TP þ FN
+ð6Þ
+F 1 ¼
+2
+1
+Pre cisi on
+þ
+1
+Rec al l
+ð7Þ
+The accuracy rate provides an overall measure of the number of correct predictions of the
+model. However, the high accuracy rate of a model does not ensure its ability to distinguish
+different classes equally if the dataset is imbalanced. In particular, in medical image classifica-
+tion, a model that can be generalized to all classes is required. In such cases, the “precision”
+and “recall” values provide insight into the performance of the model. “Precision” shows the
+accuracy of the model’s positive label prediction. This provides the ratio of the correct predic-
+tions to the total predictions yielded by the model. Conversely, “recall” measures the percent-
+age of ground truth positives that the model correctly predicted. These two evaluation metrics
+assess whether the model can reduce the number of FP and FN predictions. “F1-Score” pro-
+vides a balance between “precision” and “recall,” considering both FPs and FNs. It penalizes
+extreme values of “precision” and “recall,” each of which is achieved at the expense of the
+other. Thus, in medical image classification, it is useful to consider evaluation metrics rather
+than only the accuracy rate to obtain a precise identification of a non-diseased, as well as of a
+diseased person.
+Implementation
+A five-fold cross-validation scheme was used in this study to evaluate robustly the performance
+of the proposed ensemble model. The results for each fold and the average and standard devia-
+tion values over the five folds are tabulated in Table 4 for the Kermany dataset [4] and in
+Table 5 for the RSNA challenge dataset [33]. The high accuracy and sensitivity (recall) values
+indicate the reliability of the proposed approach. Further, Figs 7 and 8 show the confusion
+matrices obtained on the Kermany and RSNA datasets, respectively, and Fig 9 shows the ROC
+Table 4. Results of five-fold cross-va lidation of the proposed ensemb le method on the pneumonia Kermany data-
+set [4].
+Fold Acc(%) Pre(%) Rec(%) F1(%) AUC(%)
+1 98.63 98.64 98.63 98.63 98.12
+2 99.31 99.33 99.32 99.32 98.82
+3 98.38 98.46 98.38 98.29 97.86
+4 99.68 99.66 99.66 99.66 99.43
+5 98.03 98.03 98.03 98.03 97.54
+Avg±Std. Dev. 98.81±0.6 1 98.82±0.5 9 98.80±0.6 0 98.79±0.61 98.35±0.68
+Avg: average Std.Dev: Standard Deviation .
+https://d oi.org/10.1371/j ournal.pon e.0256630.t00 4
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 14 / 29
+[Page 15]
+curves obtained by the proposed method on all the five folds of cross-validation on the two
+datasets.
+Fig 10 shows the accuracy rates achieved by the base learners in transfer learning using dif-
+ferent optimizers on the Kermany dataset. The best results were obtained by the Adam opti-
+mizer for all three base learners; thus, it was chosen as the optimizer to train the base learners
+for the ensemble framework.
+Table 6 shows the results of the various ensembles consisting of three different base learners
+(including recently proposed architectures), GoogLeNet, ResNet-18, ResNet-50, ResNet-152,
+DenseNet-121, DenseNet-169, DenseNet-201, MobileNet v2, and NasMobileNet, on the Ker-
+many dataset. The results justify the choice of the combination of base learners used in this
+study, GoogLeNet, ResNet-18, and DenseNet-121. The ensemble combination achieved an
+accuracy rate of 98.81%. The next best result, an accuracy rate of 98.54%, was achieved by the
+ensemble of GoogLeNet, ResNet-18, and MobileNet v2. Further, for the chosen combination
+of base learners, GoogLeNet, ResNet-18, and DenseNet-121, in the execution of the ensemble
+we fixed some of the layers and trained the models to select the optimal setting. The results are
+shown in Fig 11. The best results for the ensemble were achieved when all the layers were train-
+able (0 layers frozen) on both datasets. Thus, we chose this setting for the ensemble
+framework.
+Gradient-weighted class activation maps analysis
+Gradient-weighted class activation maps (GradCAM) [38] were employed in this study to
+present a visual representation of the distinguishing regions in the chest X-ray images, that is,
+the regions on which the classifier focuses to make a prediction. CAM calculates the number
+of weights of each feature map (FM) based on the last convolution layer to compute the contri-
+bution of the FM to the prediction ^y at location (i, j), where our objective is a computed value
+of L
+g
+ij
+that satisfies y
+g
+¼
+P
+i;j
+L
+g
+ij
+. The final FM (C
+k
+ij
+) and the prediction ^y are represented through
+a linear relationship in which the linear layers contain global average pooling (GAP) layers and
+fully connected layers (FCLs). (1) GAP outputs A
+k
+¼ C
+k
+ij
+and (2) the FCLs, which hold weight
+w
+g
+k
+, generate an output as in Eq 8, where C
+k
+represents the visualization of the k
+th
+FM:
+L
+g
+ij
+¼
+P
+k
+w
+g
+k
+C
+k
+ij
+.
+y
+g
+¼
+X
+k
+w
+g
+k
+A
+k
+¼
+X
+k
+w
+g
+k
+X
+i;j
+C
+k
+ij
+¼
+X
+i;j
+X
+k
+w
+g
+k
+C
+k
+ij
+ð8Þ
+CAM is an unsuitable method because of the problem of the vanishing nonlinearity of clas-
+sifiers. Thus, instead of pooling them, we use GradCAM for globally averaging the gradients of
+Table 5. Results of five-fold cross-va lidation of the proposed ensemb le method on the pneumonia Radiologica l
+Society of North America challenge dataset.
+Fold Acc(%) Pre(%) Rec(%) F1(%) AUC (%)
+1 86.63 86.78 86.63 86.70 86.63
+2 86.78 87.05 87.05 87.05 86.78
+3 87.97 88.00 87.80 87.90 87.97
+4 85.98 86.00 86.63 86.31 85.98
+5 86.89 86.63 86.98 86.80 86.89
+Avg±Std. Dev. 86.85±0.7 2 86.89±0.7 3 87.02±0.4 8 86.95±0.59 86.85±0.72
+Avg: average Std.Dev: Standard Deviation .
+https://d oi.org/10.1371/j ournal.pon e.0256630.t00 5
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 15 / 29
+[Page 16]
+Fig 7. Confusion matrices obtained on the Kermany pneumo nia chest X-ray dataset by the proposed method by 5-fold
+cross validati on. a) Fold-1. (b) Fold-2. (c) Fold-3. (d) Fold-4. (e) Fold-5.
+https://doi.o rg/10.1371/j ournal.pone .0256630.g007
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 16 / 29
+[Page 17]
+the FM as weights. While the heat maps are plotted, class-specific weights are collected from
+the last convolution layer through globally averaged gradients (GAG) of the FM instead of
+pooling, as in Eq 9, where P is the number of pixels in an FM, g is the gradient of the class, and
+C
+k
+ij
+is the value of the k
+th
+FM.
+a
+g
+k
+¼
+1
+P
+X
+i
+X
+j
+@ y
+g
+@ C
+k
+ij
+ð9Þ
+After the relative weights have been gathered, the coarse saliency map (L
+c
+) is calculated as
+the weighted sum, a
+c
+k
+� C
+k
+ij
+, of the ReLU activation (Eq 10), where a
+c
+k
+represents the neuron
+importance weights. It introduces a linear combination to the FM because only the features
+that have a positive influence on the respective class are of interest; the negative pixels in the
+Fig 8. Confusion matrice s obtained on the Radiologi cal Society of North America pneumonia challenge chest X-ray dataset by the proposed metho d by five-fold
+cross validation. a) Fold-1. (b) Fold-2. (c) Fold-3. (d) Fold-4. (e) Fold-5.
+https://d oi.org/10.1371 /journal.pone. 0256630.g008
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 17 / 29
+[Page 18]
+Fig 9. Receiver operatin g characterist ic curves obtained by the proposed ensemble method on the two pneumonia
+chest X-ray datasets used in this research. (a) Kerma ny dataset [4]. (b) RSNA challeng e dataset [33].
+https://d oi.org/10.1371/j ournal.pon e.0256630.g0 09
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 18 / 29
+[Page 19]
+Fig 10. Variation of accuracy rates on the Kermany dataset [4]) achiev ed by the three base learners, GoogLe Net, ResNet-18 , and Dense Net-121 and their
+ensemble, according to the optimizer s chosen for fine tuning.
+https://doi.o rg/10.1371/j ournal.pone .0256630.g010
+Table 6. Results of extensiv e experiment s performed to determine the base learners for forming the ensemble in this study.
+Model-1 Model-2 Model- 3 Acc(%) Pre(%) Rec(%) F1(%)
+NasNetMob ile MobileNet v2 ResNet-152 96.67 96.70 96.67 96.68
+NasNetMob ile MobileNet v2 ResNet-50 97.00 97.02 97.01 97.01
+NasNetMob ile MobileNet v2 DenseNet-1 69 96.41 96.40 96.41 96.41
+NasNetMob ile MobileNet v2 DenseNet-2 01 96.06 96.21 96.07 96.11
+Mobile Net v2 ResNet- 152 DenseNet-1 69 96.92 97.03 96.92 96.95
+Mobile Net v2 ResNet-50 DenseNet-1 69 97.77 97.82 97.78 97.79
+Mobile Net v2 ResNet-50 DenseNet-2 01 95.98 96.40 95.98 96.06
+Mobile Net v2 ResNet- 152 DenseNet-2 01 94.87 95.57 94.87 94.99
+NasNetMob ile ResNet- 152 DenseNet-1 69 95.21 95.71 95.21 95.31
+NasNetMob ile ResNet- 152 DenseNet-2 01 92.56 94.06 92.56 92.81
+NasNetMob ile ResNet-50 DenseNet-1 69 96.41 96.66 96.41 96.46
+NasNetMob ile ResNet-50 DenseNet-2 01 92.99 94.28 92.99 93.20
+GoogLeNet ResNet- 152 DenseNet-1 21 97.17 97.37 97.18 97.21
+GoogLeNet ResNet- 152 DenseNet-2 01 95.04 95.65 95.04 95.15
+GoogLeNet ResNet-18 DenseNet-2 01 98.20 98.23 98.21 98.21
+GoogLeNet MobileNet v2 DenseNet-1 21 98.29 98.29 98.29 98.29
+GoogLeNet ResNet-18 MobileNet v2 98.54 98.54 98.55 98.54
+GoogLeNet MobileNet v2 NasNetM obile 98.12 98.13 98.12 98.11
+GoogLeNet ResNet-18 DenseNet -121 98.81 98.82 98.80 98.35
+https://do i.org/10.1371/j ournal.pone .0256630.t006
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 19 / 29
+[Page 20]
+Fig 11. Variation in performan ce (accura cy rates) of the ensemble with respect to the number of fixed non-trainable layers in the base learners on the
+two datasets used in this study. (a) Kermany dataset [4]. (b) RSNA challenge dataset [33].
+https://doi.org/10 .1371/journal.p one.0256630. g011
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 20 / 29
+[Page 21]
+image that belong to other categories are discarded.
+L
+g
+¼ ReL U
+X
+i
+a
+g
+k
+C
+k
+ !
+ð10Þ
+Fig 12 shows the results of the GradCAM analysis of a pneumonic and a healthy lung X-ray,
+where all three models were used to form the ensemble. Evidently, the different models
+focused on different regions of the lung X-rays, indicating that the base learners capture com-
+plementary information. This led to the success of the ensemble approach. The confidence
+scores for the pneumonic lung X-ray shown in Fig 12(a)–12(c) are GoogLeNet: 99.99%,
+ResNet-18: 75.21%, and DenseNet-121: 98.90%; all predicted correctly. For the healthy lung
+case shown in Fig 12(d)–12(f), the confidence scores are GoogLeNet: 99.47%, ResNet-18:
+97.61%, and DenseNet-121: 98.93%; all predicted correctly.
+Fig 12. Gradient -weighted class activation map (GradCAM ) decision visualizatio n of chest X-ray images when the three chosen base learners were used to form
+the ensemble . Different regions of the X-rays are the focus of the different models that capture compleme ntary information . Case-1: (a)–(c) show a pneumonic lung
+X-ray analyzed using the three base learners; the confiden ce scores of the three base learners are GoogLeNet : 99.99%, ResNet-18 : 75.21%, and DenseNet- 121: 98.90%
+Case-2: (d)–(f) show a healthy lung X-ray analyzed using the three base learners ; the confidence scores of the three base learners are GoogLe Net: 99.47%, ResNe t-18:
+97.61%, and DenseNet- 121: 98.93%.
+https://d oi.org/10.1371 /journal.pone. 0256630.g012
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 21 / 29
+[Page 22]
+Comparison with state-of-the-art methods
+Table 7 compares the performance of the proposed ensemble framework and those of the
+existing methods in the literature on the Kermany pneumonia dataset. It should be noted that
+the proposed method outperformed all the other methods. It is also noteworthy that all these
+previous methods (Mahmud et al. [39], Zubair et al. [13], Stephen et al. [20], Sharma et al.
+[19], and Liang et al. [11]) revolved around using a single CNN model for the classification of
+pneumonic lung X-ray images and that the proposed ensemble framework outperformed
+them, indicating that the ensemble technique devised in this study is a reliable method for the
+image classification task under consideration. To the best of our knowledge, no studies on the
+classification of images in the RSNA pneumonia dataset exist. Hence, for this dataset, we com-
+pared the performance of the proposed model to that of several baseline CNN models.
+Table 8 shows the evaluation results obtained with the base CNN models used to form the
+ensemble and several other standard CNN transfer learning models in comparison with those
+of the proposed method on both the datasets used in this study. It can be seen that the pro-
+posed ensemble method outperformed the base learners, as well as other transfer learning
+models, by a fair margin on both datasets.
+Table 7. Compariso n of the proposed method with other methods in the literature on the Kermany pneumonia dataset [4] and the Radiologica l Society of North
+America challenge dataset [33].
+Dataset Method Acc(%) Pre(%) Rec(%) F1(%) AUC(%)
+Kermany Mahmud et al. [39] 98.10 98.00 98.50 98.30 -
+Zubair et al. [13] 96.60 97.20 98.10 97.65 -
+Stephen et al. [20] 93.73 - - - -
+Sharma et al. [19] 90.68 - - - -
+Liang et al. [11] 90.50 89.10 96.70 92.70 -
+Proposed Method 98.81 98.82 98.80 98.79 98.35
+RSNA Antin et al. [40] - - - - 61.00
+Zhou et al. [41] 79.70 - - 80.00 -
+Yao et al. [42] - - - - 71.30
+Rajpukar et al. [14] 76.80
+Proposed Method 86.85 86.89 87.02 86.95 86.85
+https://do i.org/10.1371/j ournal.pone .0256630.t007
+Table 8. Compariso n of the proposed ensemb le framework with several standard convolution neural network models in the literature on both the Kermany and the
+Radiologica l Society of North America challeng e datasets.
+Datase t Model Acc(%) Pre(%) Rec(%) F1(%) AUC(%)
+Kerman y GoogLeNet 97.89 98.12 98.12 98.12 97.89
+AlexNet 97.17 97.22 97.18 97.19 97.17
+VGG-16 97.09 97.12 97.09 97.1 97.09
+DenseNet -121 96.23 96.63 96.24 96.31 96.23
+ResNet-18 97.29 98.31 98.29 98.3 97.29
+Proposed Method 98.81 98.82 98.80 98.79 98.35
+RSNA GoogLeNet 84.83 84.98 84.83 84.90 84.83
+AlexNet 85.86 85.15 84.86 85.00 85.86
+VGG-16 81.05 80.08 81.17 80.62 81.05
+DenseNet -121 85.67 84.98 85.55 85.26 85.67
+ResNet-18 84.98 85.55 85.37 85.46 84.98
+Proposed Method 86.85 86.89 87.02 86.95 86.85
+https://do i.org/10.1371/j ournal.pone .0256630.t008
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 22 / 29
+[Page 23]
+Furthermore, to establish the superiority of the proposed ensemble scheme over traditional
+popular ensemble techniques, the results are compiled in Table 9. The same three base CNN
+learners, GoogLeNet, ResNet-18, and DenseNet-121, were used in the ensembles; the average
+results over the five folds of cross-validation are shown for both the Kermany and RSNA chal-
+lenge datasets. The proposed ensemble method outperformed popular ensemble schemes. On
+both datasets, it can be seen that the weighted average ensemble that considers only the accu-
+racy metric used as the weights achieved the performance closest to that of the proposed
+ensemble technique. In the majority voting-based ensemble, the class that obtained the maxi-
+mum votes from the base learners is predicted as the class of the sample. For the maximum
+probability ensemble, the probability scores for each class are summed over all the base learn-
+ers and the class having the maximum probability is set as the predicted class of the sample,
+whereas in the average probability ensemble, equal weighting is given to each contributing
+classifier.
+Error analysis
+Fig 13 shows two test samples from the Kermany dataset [4] where two base learners yielded
+incorrect predictions with a low confidence rate and the third base learner yielded the correct
+prediction with a very high confidence rate, finally leading the ensemble framework to predict
+the sample correctly. Fig 13(a) shows a sample where GoogLeNet predicted “Pneumonia” with
+a confidence score of 52.1%, ResNet-18 predicted “Pneumonia” with a confidence score of
+73.8%, and DenseNet-121 predicted “Normal” with a confidence score of 89.4%. The proposed
+ensemble framework finally correctly predicted the sample to belong to the “Normal” class
+with a confidence score of 68.1%. Similarly, in the case of Fig 13(b), GoogLeNet predicted
+“Normal” with a confidence score of 98.6%, ResNet-18 predicted “Pneumonia” with a confi-
+dence score of 58.3%, and DenseNet-121 predicted “Pneumonia” with a confidence score of
+69.3%. The proposed ensemble framework correctly predicted the sample to be “Normal” with
+a confidence score of 66.3%. This indicates the robustness of the ensemble framework
+performance.
+Fig 14 shows several test samples from the Kermany dataset [4] where the ensemble frame-
+work failed to classify the samples correctly. Fig 14(a) shows a case where a sample belonging
+to class “Normal” was misclassified as “Pneumonia”; the corresponding GradCAM analysis
+images are shown in parts (c), (d), and (e). This may be due to the poor image quality, where
+the contrast of the image is not adequate, resulting in the base learners classifying the sample
+incorrectly. The GradCAM analysis showed that GoogLeNet and DenseNet-121 focused on
+Table 9. Performance comparis on of the propos ed ensemble techniqu e and popular ensemb le schemes in the literature for the two datasets used. The same base
+learners were used in all the ensembles: GoogLeNet, ResNet-18 , and DenseNet- 121.
+Dataset Ensemble technique Acc(%) Pre(%) Rec(%) F1(%) AUC (%)
+Kermany Maximum Probability 97.77 97.84 97.79 97.76 97.79
+Average Probability 97.85 97.81 97.79 97.78 97.81
+Majority Voting 98.11 98.13 98.12 98.10 97.85
+Weighted Average with only accuracy 98.20 98.22 98.20 98.18 98.11
+Proposed Ensemble 98.81 98.82 98.80 98.79 98.35
+RSNA Maximum Probability 85.67 85.80 85.67 85.73 85.67
+Average Probability 86.10 85.98 86.11 86.04 86.11
+Majority Voting 85.98 85.67 85.98 85.82 85.98
+Weighted Average with only accuracy 86.63 86.54 86.63 86.58 86.54
+Proposed Ensemble 86.85 86.89 87.02 86.95 86.85
+https://do i.org/10.1371/j ournal.pone .0256630.t009
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 23 / 29
+[Page 24]
+the spinal cord in the X-ray, whereas ResNet-18 focused on the white area of the retracted
+lungs, leading to incorrect predictions. Fig 14(b) shows a case where an image of class “Pneu-
+monia” was classified as “Normal” by the model. The GradCAM analysis images are shown in
+(f), (g), and (h). As in the previous case, the GoogLeNet and DenseNet-121 models focused on
+the spinal cord, and the ResNet-18 model focused on part of the spinal cord and the retracted
+left lung. A pneumonic lung X-ray is characterized by abscesses or pleural effusion, that is,
+fluid in the alveoli, which appears as white spots in a lung X-ray, as explained in Fig 1. It is
+plausible that such an early stage of pneumonia, where the white infiltrates have just started to
+appear sparingly in the lungs, was not captured by the CNN models. In such cases, doctors use
+air bronchogram signs to detect pneumonia. The shape and lumen of the bronchi with air
+bronchogram signs were used to distinguish lung cancer, tuberculosis, and pneumonia.
+Statistical analysis
+To analyze statistically the viability of the proposed ensemble framework, we performed two
+non-parametric tests: McNemar’s statistical test [43] and the analysis of variance (ANOVA)
+test [44], where the proposed ensemble model was compared to the base classifiers, the proba-
+bility scores of which were used in this study to determine the formation of the ensemble: Goo-
+gLeNet, ResNet-18, and DenseNet-121. Table 10 tabulates the McNemar’s test results and
+Table 11 tabulates the ANOVA test results on both the pneumonia chest X-ray datasets used
+in this study. To reject the null hypothesis, the p-value in both McNemar’s and the ANOVA
+test should be lower than 0.05 (5%); according to Tables 10 and 11, for every case in both data-
+sets, the p−value is less than 0.05. Thus, the null hypothesis was rejected by the results of both
+statistical tests. This establishes that the proposed ensemble framework captures complemen-
+tary information from the base classifiers and its predictions are superior, thus ensuring that
+the ensemble model is statistically dissimilar to any of the contributing models.
+Fig 13. Example s of samples from the Kermany dataset where two out of three base learners yielded incorrect predictio ns, but the ensembl e yielded the correct
+prediction. Both images are of class “Normal”. (a) Case-1: GoogLeNe t predicted “Pneumonia” with a confiden ce score of 53.1%, ResNe t-18 predicted “Pneumonia”
+with a confiden ce score of 73.8%, and DenseNet- 121 predicted “Normal” with a confidence score of 89.4%. The proposed ensemble framewo rk predicted “Normal”
+(correct classification) with a confidence rate of 68.1 (b) Case-2: GoogLeNe t predicted “Normal” with a confiden ce score of 98.6%, ResNe t-18 predicted “Pneumonia”
+with a confiden ce score of 58.3%, and DenseNet- 121 predicted “Pneumonia” with a confidence score of 69.3%. The proposed ensemble framewo rk predicted “Normal”
+(correct classification) with a confidence rate of 66.3%.
+https://doi.org/10 .1371/journal.p one.0256630. g013
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 24 / 29
+[Page 25]
+Fig 14. Example s of samples from the Kermany dataset [4] that were classified incorrect ly by the proposed ensembl e framework. Case-1: (a) shows an image
+originally belonging to class “Normal” but misclassified as “Pneumonia ” by the framewo rk. The GradCAM analysis images are shown in (c), (d), and (e) for
+GoogLeNet, ResNet-18 , and DenseNet- 121, respective ly. Case-2: (b) shows an image of class “Pneumoni a” predicted to belong to the “Normal” class by the framework.
+The GradCAM analysis images are shown in (f), (g), and (h)for GoogLe Net, ResNet-18, and DenseNet- 121, respective ly.
+https://doi.org/10 .1371/journal.p one.0256630. g014
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 25 / 29
+[Page 26]
+Conclusion and future work
+Early detection of pneumonia is crucial for determining the appropriate treatment of the dis-
+ease and preventing it from threatening the patient’s life. Chest radiographs are the most
+widely used tool for diagnosing pneumonia; however, they are subject to inter-class variability
+and the diagnosis depends on the clinicians’ expertise in detecting early pneumonia traces. To
+assist medical practitioners, an automated CAD system was developed in this study, which
+uses deep transfer learning-based classification to classify chest X-ray images into two classes
+“Pneumonia” and “Normal.” An ensemble framework was developed that considers the deci-
+sion scores obtained from three CNN models, GoogLeNet, ResNet-18, and DenseNet-121, to
+form a weighted average ensemble. The weights assigned to the classifiers were calculated
+using a novel strategy wherein four evaluation metrics, precision, recall, f1-score, and AUC,
+were fused using the hyperbolic tangent function. The framework, evaluated on two publicly
+available pneumonia chest X-ray datasets, obtained an accuracy rate of 98.81%, a sensitivity
+rate of 98.80%, a precision rate of 98.82%, and an f1-score of 98.79% on the Kermany dataset
+and an accuracy rate of 86.86%, a sensitivity rate of 87.02%, a precision rate of 86.89%, and an
+f1-score of 86.95% on the RSNA challenge dataset, using a five-fold cross-validation scheme. It
+outperformed state-of-the-art methods on these two datasets. Statistical analyses of the pro-
+posed model using McNemar’s and ANOVA tests indicate the viability of the approach. Fur-
+thermore, the proposed ensemble model is domain-independent and thus can be applied to a
+large variety of computer vision tasks.
+However, as previously mentioned, in some instances the ensemble framework failed to
+produce correct predictions. In the future, we may investigate techniques such as contrast
+enhancement of the images or other pre-processing steps to improve the image quality. We
+may also consider using segmentation of the lung image before classification to enable the
+CNN models to achieve improved feature extraction. Furthermore, because three CNN models
+are required to train the proposed ensemble, the computation cost is higher than that of the
+CNN baselines developed in studies in the literature. In the future, we may attempt to reduce
+the computational requirements by employing methods such as snapshot ensembling.
+Table 10. Results of McNemar’ s statistica l test of the ensemble model and the base learners on both datasets. For
+all the base learners with which the proposed model is compared, the p−value is less than 0.05, and thus, the null
+hypothe sis is rejected.
+McNemar’s Test p-value
+Kermany dataset RSNA dataset
+GoogLeNet 0.0000 0.0017
+ResNet-18 0.0430 0.0214
+DenseNet -121 0.0002 0.0006
+https://d oi.org/10.1371/j ournal.pon e.0256630.t01 0
+Table 11. Results of analysis of varian ce (ANOVA) statistica l test of the ensemble model and the base learners on
+both datasets. For all the base learners with which the proposed model is compared , the p−value is less than 0.05, and
+thus, the null hypothesis is rejected.
+ANOVA Test p-value
+Kerman y Dataset RSNA Dataset
+GoogLeNet 0.0435 0.0131
+ResNet-18 0.0021 0.0001
+DenseNet-1 21 0.0017 0.0056
+https://d oi.org/10.1371/j ournal.pon e.0256630.t01 1
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 26 / 29
+[Page 27]
+Acknowledgmen ts
+The authors would like to thank the Centre for Microprocessor Applications for Training,
+Education and Research (CMATER) Laboratory of the Computer Science and Engineering
+Department, Jadavpur University, Kolkata, India, for providing the infrastructural support.
+Author Contributions
+Formal analysis: Rohit Kundu, Ritacheta Das, Ram Sarkar.
+Funding acquisition: Zong Woo Geem, Gi-Tae Han.
+Software: Rohit Kundu, Ritacheta Das.
+Supervision: Zong Woo Geem, Gi-Tae Han, Ram Sarkar.
+Writing – original draft: Rohit Kundu.
+Writing – review & editing: Zong Woo Geem, Gi-Tae Han, Ram Sarkar.
+References
+1. WHO Pneumonia. World Health Organizat ion. (2019), https://www .who.int/new s-room/fact- sheets/
+detail/pneum onia
+2. Neuman M., Lee E., Bixby S., Diperna S., Hellinger J., Markowitz R., et al. Variability in the interpreta-
+tion of chest radiograp hs for the diagnosis of pneumonia in children. Journal Of Hospital Medicine. 7,
+294–298 (2012) https://doi.or g/10.100 2/jhm.955 PMID: 22009855
+3. Williams G., Macaskil l P., Kerr M., Fitzgeral d D., Isaacs D., Codarini M., et al. Variability and accuracy
+in interpretatio n of consolida tion on chest radiograp hy for diagno sing pneumon ia in children under 5
+years of age. Pediatric Pulmon ology. 48, 1195–1 200 (2013) https://doi.or g/10.1002/p pul.22806 PMID:
+23997040
+4. Kermany D., Zhang K. & Goldbaum M. Labeled Optical Coheren ce Tomogra phy (OCT) and Chest X-
+Ray Images for Classifica tion. (Mende ley,2018)
+5. Lal S., Rehman S., Shah J., Meraj T., Rauf H., Damas ˇ evičius R., et al. Adversar ial Attack and Defenc e
+through Adversar ial Trainin g and Feature Fusion for Diabetic Retinopath y Recognition . Sensor s. 21,
+3922 (2021) https://doi.or g/10.339 0/s211139 22 PMID: 34200216
+6. Rauf H., Lali M., Khan M., Kadry S., Alolaiy an H., Razaq A., et al. Time series forecasting of COVID-19
+transmiss ion in Asia Pacific countrie s using deep neural networks. Personal And Ubiquitou s
+Computing. pp. 1–18 (2021) https://doi.or g/10.1007/ s00779-020- 01494-0 PMID: 3345643 3
+7. Deng J., Dong W., Socher R., Li L., Li K. & Fei-Fei, L. Imagenet: A large-sc ale hierarchical image data-
+base. 2009 IEEE Conference On Computer Vision And Pattern Recognition . pp. 248-255 (2009)
+8. Dalhoumi S., Dray G., Montmain J., Derosière, G. & Perrey S. An adaptive accuracy -weighted ensem-
+ble for inter-subjec ts classifica tion in brain-computer interfaci ng. 2015 7th Interna tional IEEE/EMBS
+Conferen ce On Neural Engineeri ng (NER). pp. 126-129 (2015)
+9. Albahli S., Rauf H., Algosaibi A. & Balas V. AI-driven deep CNN approac h for multi-label pathology clas-
+sification using chest X-Rays. PeerJ Computer Science. 7 pp. e495 (2021) https://doi.or g/10.771 7/
+peerj-cs. 495 PMID: 33977135
+10. Rahman T., Chowdhury M., Khandak ar A., Islam K., Islam K., Mahbub Z., et al. Transfer learning with
+deep convolutio nal neural network (CNN) for pneumon ia detection using chest X-ray. Applied Sciences .
+10, 3233 (2020) https://doi.or g/10.339 0/app1009323 3
+11. Liang G. & Zheng L. A transfer learning method with deep residual network for pediatric pneumonia
+diagnos is. Computer Methods And Programs In Biomedic ine. 187 pp. 104964 (2020) https://doi.or g/
+10.1016/ j.cmpb.2019 .06.023 PMID: 31262537
+12. Ibrahim A., Ozsoz M., Serte S., Al-Turjm an F. & Yakoi P. Pneumo nia classificat ion using deep learning
+from chest X-ray images during COVID-19 . Cognitive Compu tation. pp. 1–13 (2021) https://doi.or g/10.
+1007/s12 559-020-0 9787-5 PMID: 33425044
+13. Zubair S.An Efficient Method to Predict Pneumo nia from Chest X-Rays Using Deep Learning Approach .
+The Importance Of Health Informatics In Public Health During A Pandem ic. 272 pp. 457 (2020)
+14. Rajpurkar P., Irvin J., Zhu K., Yang B., Mehta H., Duan T., et al. & Others Chexnet: Radiolog ist-level
+pneumon ia detection on chest x-rays with deep learning. ArXiv Preprint ArXiv:1711.0 5225. (2017)
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 27 / 29
+[Page 28]
+15. Albahli S., Rauf H., Arif M., Nafis M. & Algosaibi A. Identificati on of thoracic diseases by exploitin g deep
+neural networks. Neural Networks. 5 pp. 6 (2021)
+16. Chandra T. & Verma K. Pneumo nia detection on chest X-Ray using machine learning paradigm . Pro-
+ceeding s Of 3rd International Conferen ce On Computer Vision And Image Processin g. pp. 21-33
+(2020)
+17. Kuo K., Talley P., Huang C. & Cheng L. Predicting hospital- acquired pneumon ia among schizo phrenic
+patients: a machine learning approach. BMC Medical Informatics And Decision Making. 19, 1–8 (2019)
+https://doi.or g/10.118 6/s12911 -019-0792-1 PMID: 30866913
+18. Yue H., Yu Q., Liu C., Huang Y., Jiang Z., Shao C., et al. & Others Machine learning-bas ed CT radio-
+mics method for predicting hospital stay in patients with pneumon ia associated with SARS-Co V-2 infec-
+tion: a multicenter study. Annals Of Translational Medicine. 8 (2020) https://doi.or g/10.210 37/atm-20 -
+3026 PMID: 327937 03
+19. Sharma H., Jain J., Bansal P. & Gupta S. Feature extraction and classificat ion of chest x-ray images
+using cnn to detect pneumonia. 2020 10th International Conferen ce On Cloud Computing, Data Sci-
+ence & Engineeri ng (Confluen ce). pp. 227-23 1 (2020)
+20. Stephen O., Sain M., Maduh U. & Jeong D. An efficient deep learning approac h to pneumonia classif i-
+cation in healthcar e. Journal Of Healthca re Engineeri ng. 2019 (2019) https://do i.org/10.1155 /2019/
+4180949 PMID: 31049186
+21. Janizek J., Erion G., DeGrave A. & Lee S. An adversar ial approach for the robust classification of pneu-
+monia from chest radiograp hs. Proceed ings Of The ACM Conferen ce On Health, Inference , And
+Learning. pp. 69-79 (2020)
+22. Zhang J., Xie Y., Pang G., Liao Z., Verjans J., Li W., et al. & Others Viral Pneumo nia Screening on
+Chest X-rays Using Confidenc e-Aware Anomaly Detection. IEEE Transaction s On Medical Imaging.
+(2020)
+23. Tuncer T., Ozyurt F., Dogan S. & Subasi A. A novel Covid-19 and pneumon ia classifica tion method
+based on F-transform . Chemomet rics And Intelligent Laborat ory Systems. 210 pp. 104256 (2021)
+https://doi.or g/10.101 6/j.chemola b.2021.1 04256 PMID: 33531722
+24. Jaiswal A., Tiwari P., Kumar S., Gupta D., Khanna A. & Rodrigues J. Identifying pneumon ia in chest X-
+rays: A deep learning approach. Measureme nt. 145 pp. 511–518 (2019) https://doi.o rg/10.1016/j.
+measuremen t.2019.05 .076
+25. Gabrusev a T., Poplavskiy D. & Kalinin A. Deep learning for automatic pneumonia detection. Proceed -
+ings Of The IEEE/CVF Conferen ce On Comp uter Vision And Pattern Recognition Workshops . pp. 350-
+351 (2020)
+26. Pan I., Cadrin- Chênevert A. & Cheng P. Tackling the radiological society of north america pneumon ia
+detection challenge. American Journal Of Roentgeno logy. 213, 568–574 (2019) https://doi.or g/10.
+2214/AJR.19 .21512 PMID: 31120793
+27. Meraj T., Hassan A., Zahoor S., Rauf H., Lali M., Ali L., et al. Lungs nodule detection using semantic
+segmentatio n and classif ication with optimal feature s. Preprints. (2019)
+28. Rajinikanth V., Kadry S., Damas ˇ evičius R., Taniar D. & Rauf H. Machine- Learning- Scheme to Detect
+Choroid al-Neovascula rization in Retinal OCT Image. 2021 Seventh Interna tional Conferen ce On Bio
+Signals, Images , And Instrumenta tion (ICBSII) . pp. 1-5 (2021)
+29. Kadry S., Nam Y., Rauf H., Rajinikanth V. & Lawal I. Automate d Detection of Brain Abnorm ality using
+Deep-Le arning-Sch eme: A Study. 2021 Seventh International Conferen ce On Bio Signals, Images,
+And Instrumenta tion (ICBSII) . pp. 1-5 (2021)
+30. Rajinikanth V., Kadry S., Taniar D., Damas ˇ evičius, R. & Rauf H. Breast-Ca ncer Detectio n using Ther-
+mal Images with Marine-Pr edators-Alg orithm Selected Feature s. 2021 Seventh International Confer-
+ence On Bio Signals, Images, And Instrumenta tion (ICBSII) . pp. 1-6 (2021)
+31. Kundu R., Basak H., Singh P., Ahmadian A., Ferrara M. & Sarkar R. Fuzzy rank-based fusion of CNN
+models using Gompe rtz function for screening COVID-19 CT-scan s. Scientifi c Reports. 11, 14133
+(2021,7), https://doi.or g/10.103 8/s41598 -021-9365 8-y PMID: 34238992
+32. Manna A., Kundu R., Kaplun D., Sinitca A. & Sarkar R. A fuzzy rank-based ensemble of CNN models
+for classificat ion of cervical cytology. Scientifi c Reports. 11, 1–18 (2021) https://doi.or g/10.103 8/
+s41598-021 -93783-8 PMID: 34267261
+33. Wang X., Peng Y., Lu L., Lu Z., Bagheri M. & Summers R. Chestx-ray 8: Hospital-sc ale chest x-ray data-
+base and benchmarks on weakly-s upervised classif ication and localizatio n of commo n thorax diseases.
+Proceedings Of The IEEE Conferen ce On Computer Vision And Pattern Recognition . pp. 2097-2106
+(2017)
+34. Szegedy C., Liu W., Jia Y., Sermanet P., Reed S., Anguelov D., et al. Going deeper with convolutio ns.
+Proceedings Of The IEEE Conferen ce On Computer Vision And Pattern Recognition . pp. 1-9 (2015)
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 28 / 29
+[Page 29]
+35. He K., Zhang X., Ren S. & Sun J. Deep residual learning for image recognition. Proceeding s Of The
+IEEE Conferen ce On Computer Vision And Pattern Recogn ition. pp. 770-778 (2016)
+36. Huang G., Liu Z., Van Der Maaten L. & Weinbe rger K. Densely connected convolutio nal networks . Pro-
+ceeding s Of The IEEE Conferen ce On Computer Vision And Pattern Recog nition. pp. 4700-4708
+(2017)
+37. Lin M., Chen Q. & Yan S. Network in network. ArXiv Preprint ArXiv:1312.4 400. (2013)
+38. Selvaraju R., Cogswel l M., Das A., Vedant am R., Parikh D. & Batra D. Grad-cam : Visual explana tions
+from deep networks via gradient-b ased localizatio n. Proceedings Of The IEEE Interna tional Conferen ce
+On Computer Vision. pp. 618-626 (2017)
+39. Mahmud T., Rahman M. & Fattah S. CovXNe t: A multi-dilation convolutio nal neural network for auto-
+matic COVID-19 and other pneumon ia detection from chest X-ray images with transfer able multi-recep -
+tive feature optimization . Computers In Biology And Medicine. 122 pp. 103869 (2020) https://doi. org/
+10.1016/ j.compbiomed .2020.10 3869 PMID: 32658740
+40. Antin B., Kravitz J. & Martayan E. Detecting pneumon ia in chest X-Rays with supervised learning.
+Semanticsc holar. Org. (2017)
+41. Zhou S., Zhang X. & Zhang R. Identifying cardiome galy in ChestX-ra y8 using transfer learning. MED-
+INFO 2019: Health And Wellbeing E-Network s For All. pp. 482–486 (2019) PMID: 314379 70
+42. Yao L., Poblenz E., Dagunts D., Covington B., Bernard D. & Lyman K. Learning to diagnose from
+scratch by exploitin g dependenc ies among labels. ArXiv Preprint ArXiv:1710.1 0501. (2017)
+43. Dietterich T.Approx imate statistic al tests for comparing supervise d classification learning algorithm s.
+Neural Comp utation. 10, 1895–1 923 (1998) https:// doi.org/10.11 62/0899 76698300017 197 PMID:
+9744903
+44. Cuevas A., Febrero M. & Fraiman R. An anova test for functional data. Computationa l Statistics & Data
+Analysis. 47, 111–12 2 (2004) https://d oi.org/10.101 6/j.csda.200 3.10.021
+PLOS ONE
+Pneumo nia detection in chest X-ray images using an ensemble of deep learning models
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02566 30 September 7, 2021 29 / 29
+
+--- END OF pone.0256630.pdf ---
+
+
+
+--- START OF research_paper (template).pdf ---
+
+
+[Page 1]
+ 
+      IRAMVD: AN INDIAN ROAD-AWARE NEURO-SYMBOLIC FRAMEWORK FOR MULTI-VIOLATION TRAFFIC DETECTION 
+ 
+Sadu Venkatesh 
+Department Of Computing Technologies  
+SRM Institute of Science and Technology 
+Chennai, India 
+sv0968@srmist.edu.in 
+ 
+Yalamarthy Pranav 
+Department Of Computing Technologies  
+SRM Institute of Science and Technology 
+Chennai, India 
+py8571@srmist.edu.in 
+ 
+T Ragunthar 
+Department Of Computing Technologies  
+SRM Institute of Science and Technology 
+Chennai, India 
+raguntht@srmist.edu.in 
+Abstract—The enforcement of traffic rules in India has 
+become more difficult because of two factors the urban growth 
+that has occurred at a rapid pace and the different traffic 
+patterns that exist across the country. The current manual 
+monitoring systems have limited violation detection capabilities 
+because they require human operators for operation and their 
+coverage area is restricted and their violation detection process 
+experiences extended delays before violations are identified. The 
+research presents IRAMVD a system that functions as an Indian 
+Road-Aware Neuro -Symbolic system which identifies traffic 
+violations in real time on multiple road types. The system 
+develops violation validation procedures through the 
+combination of deep learning visual percep tion techniques and 
+symbolic rule -based reasoning methods which operate 
+according to specific situational contexts. The system recognizes 
+vehicles and riders and traffic signals through a hybrid object 
+detection backbone which establishes actual violations  and 
+accepted exceptions through its symbolic rule engine that 
+applies Indian traffic laws. The system enables users to detect 
+multiple violations which include helmet non -compliance and 
+triple riding and red-light jumping and wrong lane driving. The 
+framework tested in Indian traffic conditions proved to 
+maintain high precision and recall results while achieving low 
+inference times which suit edge deployment needs. The 
+combination of neuro -symbolic reasoning and vision -based 
+detection systems leads to a si gnificant drop in false positive 
+rates while increasing system reliability during unstructured 
+traffic situations. The developed system delivers an expandable 
+traffic monitoring system which protects user privacy for use in 
+smart city enforcement and intel ligent traffic monitoring 
+systems. 
+Keywords—Traffic Violation Detection, Neuro -Symbolic AI, 
+Indian Road Traffic, Computer Vision, Intelligent 
+Transportation Systems 
+I. INTRODUCTION  
+ India experiences an unorganized traffic system because 
+it has multiple types of vehicles and drivers who do not follow 
+lane rules and drivers who break traffic laws and drivers who 
+display different driving patterns. National road safety reports 
+show that traffic violations which include drivers not wearing 
+helmets and drivers who run traffic signals and drivers who 
+drive on the wrong side of the road result in most road 
+accidents. The ability of manual traffic enforcement methods 
+to expand their operations suffers from workforce limitations 
+and evaluation bias and their inability to patrol all areas. The 
+development of computer vision and deep learning 
+technologies allows for the automatic detection of traffic 
+violations through surveillance cameras and edge devices. The 
+YOLO-based object detection models show effective results 
+when they need to identify vehicles and riders during real-time 
+operations. The Indian road system presents complex 
+challenges because data -driven methods do not succeed 
+without understanding contextual information. The absence of 
+rule knowledge causes emergency vehicles and temporary 
+signal changes and local traffic customs to produce incorrect 
+violation reports. The current system needs to develop new 
+systems which can merge percep tion capabilities with 
+reasoning abilities. Neuro-symbolic artificial intelligence uses 
+a combined method which brings together neural networks for 
+visual comprehension and symbolic logic for decision-making 
+based on established rules. These systems provid e traffic 
+violation detection which can be explained through its 
+processing methods and which takes current circumstances 
+into account while adhering to legal standards. The research 
+presents IRAMVD which serves as an Indian Road -Aware 
+Neuro-Symbolic Frame work for Multi -Violation Traffic 
+Detection. The framework creates an Indian traffic system 
+which uses traffic rule definitions and road conditions and 
+multiple violation detection methods. The major contributions 
+of this paper are as follows: 
+Development and Validation of the Hybrid Architecture 
+for Voice and Video Transmission Security. 
+1. Support for simultaneous detection and validation of 
+multiple traffic violations. 
+2. Integration of Indian traffic rules to reduce false 
+positives and improve decision reliability. 
+3. Performance evaluation demonstrating suitability for 
+real-time edge-based deployment. 
+The remainder of this paper is organized as follows. 
+Section II reviews related work in traffic violation detection 
+systems. Section III presents the proposed IRAMVD 
+framework and system architecture. Section IV discusses 
+experimental results and performan ce analysis. Section V 
+concludes the paper and outlines future research directions. 
+II. BACKGROUND AND RELATED WORK 
+The field of automated traffic monitoring and violation 
+detection systems has undergone major changes during the 
+last twenty years because existing systems have moved from 
+using infrastructure-based monitoring systems to employing 
+modern visual tracking an d machine learning technologies. 
+The first solutions developed methods to enforce rules through 
+determined logical systems, but present -day research studies 
+use deep learning methods to recognize visual content and 
+comprehend scenes. The recent development  of hybrid 
+systems alongside neuro -symbolic systems has led to new 
+methods for handling visual understanding tasks.  paradigms 
+have been introduced to address the limitations of purely data-
+driven approaches. The current section examines previous 
+research through three generational phases which categorize 
+existing systems while showing their advantages and 
+[Page 2]
+disadvantages. This analysis creates a need for the IRAMVD 
+framework. 
+A. First Generation: Sensor-Based and Rule-Driven Traffic 
+Monitoring 
+Previously, early traffic violation detection systems were 
+reliant primarily on the physical sensors and handcrafted rules 
+instead of visual intelligence.. 
+1) Infrastructure-Centric Approaches 
+The initial Intelligent Transportation Systems (ITS) used 
+inductive loop detectors and radar -based speed guns and 
+infrared sensors as their core components. The developed 
+systems operated best on organized road networks while they 
+targeted specific traffic violations like overspeeding and red-
+light jumping. The methods succeeded in controlled 
+environments but needed high-cost infrastructure systems and 
+they showed high sensitivity toward both calibration mistakes 
+and changes in environmental conditions. The systems failed 
+to process multiple traffic violations together with traffic 
+situations that included three or more people riding on the 
+same vehicle and driving on the wrong side of the road which 
+occurs frequently in Indian traffic situations.. 
+2) Rule-Based Image Processing Systems 
+Surveillance cameras became widely used which led to the 
+adoption of traditional computer vision methods that 
+included background subtraction and edge detection and 
+motion analysis for detecting violations. The systems 
+operated through handcrafted heuristics which used pixel-
+level features to establish fixed operational thresholds. The 
+system showed restricted performance when it encountered 
+occlusion and illumination changes and different traffic 
+patterns.  
+The system used deterministic rules which restricted its 
+ability to function in real -world situations that involved 
+unpredictable traffic conditions. B. Second Generation: 
+Deep Learning–Based Visual Perception Systems 
+Deep learning brought about a significant paradigm shift in 
+automated traffic analysis. 
+1) CNN-Based Object Detection and Tracking 
+The convolutional neural network (CNN) technology 
+developed from Faster R -CNN and SSD and YOLO 
+architectures to achieve dependable vehicle and rider and 
+traffic signal detection. The system used multi-object tracking 
+algorithms like SORT and DeepSORT to pe rform both 
+trajectory estimation and spatio-temporal analysis.. 
+Several studies employed these models to detect violations 
+which included helmet non -compliance and lane misuse 
+and signal jumping. Most systems were built to identify one 
+type of violation because they operated under the belief that 
+drivers would stay in designated lanes and follow 
+predictable driving patterns which does not happen in 
+Indian road conditions. 
+2) Limitations of Purely Neural Approaches 
+Deep learning systems demonstrate excellent detection 
+abilities but they face significant operational constraints. 
+The first problem exists because black-box models produce 
+enforcement decisions which legal and regulatory systems 
+cannot explain. The second problem occurs because neural 
+systems cannot handle contextual reasoning which includes 
+differentiating between legal lane overlap and illegal road 
+usage in areas with partial road markings. 
+ The research results show that models which use data from 
+non-Indian sources produce excessive false -positive rates 
+when used in diverse traffic conditions which makes them 
+unsuitable for actual law enforcement work. 
+C. Third Generation: Context -Aware and Hybrid Traffic 
+Intelligence Systems 
+Thus far, all current work serves to address the limitations 
+of perception-only models by seeing contextual reasoning as 
+an essential ingredient in traffic analysis systems.. 
+1) Probabilistic and Multi-Modal Approaches 
+The first sentence of the text describes the process which 
+uses three techniques to achieve better results in detecting 
+violations. The research investigates two approaches to 
+model vehicle interactions through graph -based systems 
+which use spatio -temporal restrictions to create their 
+models. The methods improve contextual understanding, 
+but they still depend on statistical methods without 
+providing clear traffic law and regulatory rule systems. 
+2) Neuro-Symbolic and Rule-Augmented Vision Systems 
+Neuro-symbolic artificial intelligence uses neural 
+perception together with symbolic reasoning to create systems 
+which can explain their decisions and operate within 
+predefined limits. Safety -critical domains like autonomous 
+driving and robotics use symbol ic rules to create logical 
+boundaries which enhance system transparency.  
+The current neuro -symbolic traffic systems can only 
+function in limited environments which researchers test 
+through controlled experiments. The existing frameworks for 
+traffic violation detection operate in real -world situations 
+which face unstructured con ditions yet they fail to establish 
+complete models of Indian traffic environments.. 
+D. Comparative Analysis of Existing Traffic Violation 
+Detection Systems 
+Table I provides a comparison of different traffic violation 
+detection methods through their analysis of perception 
+abilities, their capacity to understand situations, their ability to 
+handle increasing demands, and their methods of providing 
+explanations. 
+TABLEI 
+COMPARISON OF TRAFFIC VIOLATION DETECTION 
+APPROACHES 
+System 
+Type 
+Percepti
+on 
+Context 
+Reasoni
+ng 
+Multi-
+Violati
+on 
+Suppor
+t 
+Explainabil
+ity 
+Sensor-
+Based 
+Systems 
+Low Rule-
+Based 
+No High 
+Classical 
+CV 
+Methods 
+Medium Heuristi
+c          
+No Medium 
+[Page 3]
+Deep 
+Learning 
+Only    
+High Implicit Limite
+d 
+Low 
+Hybrid 
+Probabilis
+tic Models 
+High Partial Limite
+d 
+Medium 
+IRAMVD 
+(Proposed
+) 
+High Implicit 
+Symboli
+c 
+Yes High 
+ 
+ 
+E. Research Gap and Motivation 
+A systematic review of existing literature reveals three key 
+gaps in research: 
+1. Single-Violation Bias:  In contrast, other local 
+controllers that were programmed to go after solely 
+single-lane miscreants let some combine common 
+violations like stopping in first lane and driving 
+down the wrong lane. 
+2. Limited Explainability: Black-box neural models 
+do not provide understandable reasoning because 
+their explanation mechanisms remain hidden. This 
+limitation makes them inappropriate for use in legal 
+enforcement and auditing processes. 
+3. Poor Adaptation to Indian Roads:  Models that 
+learn from structured traffic datasets cannot perform 
+well when used in Indian road conditions which have 
+different road characteristics and lack strict traffic 
+regulations. 
+The proposed IRAMVD framework uses a road -aware 
+neuro-symbolic architecture which combines deep visual 
+perception with specific traffic rule reasoning to achieve 
+accurate explainable multi-violation detection while adapting 
+to Indian traffic systems. 
+ 
+ 
+III. SYSTEM ARCHITECTURE AND DESIGN: 
+The proposed IRAMVD framework functions as a modular 
+system which enables scalability through its explainable 
+design to manage Indian road traffic environments that 
+present both heterogeneous elements and complex 
+operational challenges. The system architec ture provides 
+three main functions which include processing data in real 
+time and maintaining system performance during noisy visual 
+conditions and executing enforcement actions through visible 
+procedures. The IRAMVD system achieves its three main 
+goals th rough three defined system components which 
+include the Data Ingestion Layer and the Neuro -Symbolic 
+Perception and Reasoning Layer and the Infrastructure Layer 
+which enables edge–cloud computing. 
+A. High-Level Architectural Overview 
+ 
+IRAMVD processes live video feeds from traffic 
+surveillance cameras which monitor intersection and 
+highway and urban road locations as shown in Fig. 1. The 
+system processes incoming video streams through two 
+separate processing paths which consist of a Neural 
+Perception Engine and a Symbolic Reasoning Engine.. 
+The Neural Perception Engine executes object detection 
+together with multi-object tracking to detect vehicles and 
+riders and helmets and traffic signals together with all other 
+contextual elements. The Symbolic Reasoning Engine 
+simultaneously assesses traffic rules which have been 
+transformed into rule-based constraints based on Indian 
+traffic regulations. The system uses Violation Fusion and 
+Decision Module to combine output from both engines 
+which enables precise identification of individual and 
+multiple traffic violations linked to each monitored vehicle. 
+B. Data Ingestion Layer 
+The Data Ingestion Layer serves as the interface between 
+raw traffic data and the inference pipeline. The system 
+supports live camera feeds through RTSP protocols and 
+archived video streams for offline analysis. 
+This layer implements the following functions: 
+1. Stream Normalization: Video frames are resized 
+and temporally aligned so as to ensure the 
+consistent inference throughput 
+2. Adaptive Frame Sampling: A rationale for frame 
+selection is accuracy in detection and 
+computational efficiency 
+3. Metadata Annotation: Each frame is tagged using 
+location identifiers, timestamps, and orientation 
+parameters of the camera for use in downstream 
+contextual reasoning. 
+The removal of the ingestion of data from control logic 
+enables scalable deployment over various network locations 
+where the execution points are such that bottlenecks do not 
+occur. 
+C. Infrastructure Layer: Edge–Cloud Execution Model 
+The system uses a combination of edge computing and 
+cloud computing to fulfill its requirements for real-time 
+operations and system expansion. The system runs object 
+detection and tracking processes which require heavy 
+computation but need immediate results on edge devices 
+
+[Page 4]
+that are installed close to camera locations. The system 
+allows users to choose between processing higher-level 
+analytics and violation data aggregation together with long-
+term storage in cloud infrastructure. 
+The infrastructure layer enforces: 
+1. Prevention of any possible interference or 
+crossover in signal generated while having separate 
+camera signals.. 
+2. Strict and quantified memory and compute quotas 
+to ensure relentless and real-time operation 
+3. Manage secure buffers with auto-clerk granting 
+level of data retention ominousness.. 
+This execution model enables low-latency detection while 
+supporting large-scale urban deployments. 
+IV. METHODOLOGY AND ALGORITHMIC DESIGN 
+The section presents the fundamental methodology which 
+supports the IRAMVD framework by explaining its neuro -
+symbolic detection system and its parallel processing 
+architecture and its comprehensive testing methods which 
+validate multiple simultaneous violations.. 
+A. Neuro-Symbolic Detection Strategy 
+Indian traffic violations show both visible traffic patterns 
+and traffic behavior patterns that change based on their 
+surroundings. The system uses two separate detection 
+methods because it needs to resolve this issue through its two-
+phase neuro-symbolic detection system which combines deep 
+neural perception with symbolic rule-based reasoning. 
+1) Phase I: Neural Perception 
+Deep learning object detection models identify safety 
+violations that depend on visual elements which include 
+motorcycle riders who do not wear helmets and triple riders 
+and people who use mobile phones and people who violate 
+traffic signals. 
+Define an input stream of video V and a set of extracted 
+frames as F. Output from a neural perceptron is defined as: 
+𝑆neural = ⋃ DetectObjects(𝑓,
+𝑓∈𝐹
+𝑀cnn) (1) 
+ 
+where 𝑀cnn denotes the trained convolutional neural 
+network. Each detection yields tuples of the form: 
+⟨object_type,bounding_box,confidence,timestamp⟩ 
+ 
+Car hacking Hamlet is a photography project that consists 
+of examining vulnerabilities in car hacking by a 
+fictionalized character. In this production, the actors in the 
+roles of Hamlet are cars themselves 
+2) Phase II: Symbolic Reasoning 
+The process of violating rules which need understanding 
+specific situations and time periods needs to be solved through 
+symbolic reasoning. The system transforms neural outputs 
+into logical predicates which it tests against a set of established 
+rules. 
+𝑆symbolic = ⋃ InferRules(𝑃(𝑡), 𝑅)
+𝑡∈𝑇
+(2) 
+ 
+The notation 𝑃(𝑡) is used to describe predicates derived at 
+time 𝑡, while 𝑅represents the set of symbolic traffic rules. 
+Representative rules include: 
+• IF (Vehicle = TwoWheeler AND RiderCount > 2) → 
+Triple Riding Violation 
+• IF (Signal = Red AND VehicleCrossesStopLine)  → 
+Red-Light Violation 
+• IF (LaneDirection ≠VehicleDirection) → Wrong -
+Side Driving 
+On either side of the central channel, colum injury severity is 
+detected in near proximity terms or sentential frame buffering. 
+B. Parallel Algorithmic Execution 
+The fork –join parallel execution model performs 
+simultaneous execution of neural perception and symbolic 
+reasoning. The two pipelines operate independently to process 
+frame batches while they merge their results during violation 
+fusion. 
+ 
+Algorithm 1: IRAMVD Multi -Violation Detection 
+Pipeline 
+Input: Video stream 𝑉 , Rule set 𝑅 
+Output: Structured violation report 𝑅out 
+1: Initialize empty violation set 𝑉total 
+2: Initialize tracking map 𝑇vehicles 
+3: for each frame batch 𝐹 ∈ 𝑉do 
+4:   𝐷 ← NeuralDetection(𝐹) 
+5:   𝑇vehicles ← UpdateTracks(𝐷) 
+6:   𝑃 ← GeneratePredicates(𝑇vehicles) 
+7:   𝑉rules ← ApplyRules(𝑃, 𝑅) 
+8:   𝑉total ← 𝑉total ∪ 𝑉rules 
+
+[Page 5]
+9: end for 
+10: return Format Report(𝑉total) 
+C. Validation and Noise Mitigation 
+To reduce noise from occlusion, motion blur, and partial 
+visibility, IRAMVD includes many acceptance strategies: 
+1. Temporal Consistency:  Violations are only 
+registered if they are detected in two consecutive 
+frames. 
+2. Confidence Thresholding : Engagingly cadenced 
+rose petals flit wily across dreamy glades. 
+3. Contextual Rule Enforcement: It is not possible to 
+violate the rules, which includes formal logical 
+invalidation.. 
+D. Violation Fusion and Deduplication 
+Each violation instance 𝑣is represented as: 
+𝑣 = ⟨vehicle_id,violation_type,timestamp,location⟩ 
+ 
+A unique fingerprint is computed as: 
+𝐻(𝑣) = SHA256(vehicle_id ∥ violation_type ∥ timestamp) (3) 
+ 
+The policy approach of merging violations with the same 
+fingerprint, combining the so-called duplicates and 
+consolidating enforcement record as a single entity 
+. 
+E. Implementation Details 
+The framework is implemented using the following 
+components: 
+• Object Detection: YOLOv8 
+• Multi-Object Tracking: DeepSORT 
+• Symbolic Reasoning: Rule-based inference engine 
+• Deployment: Edge devices with optional cloud 
+integration 
+• Concurrency: Multi -threaded frame processing 
+pipeline 
+A configurable rulebase may be demanded in accordance 
+with regional traffic prerequisites and the development of 
+enforcement extent. 
+V.THREAT MODEL AND SECURITY 
+CONSIDERATIONS 
+IRAMVD functions within urban traffic areas that require 
+safety precautions because any wrong decision or system 
+misuse or infrastructure failure will result in legal issues and 
+operational problems and social impacts. The section 
+establishes the threat mo del for IRAMVD through security 
+assumptions and attack surface analysis while assessing the 
+remaining risks from actual deployments. 
+A. Assumptions 
+The IRAMVD framework hinges on some assumptions: 
+1. Trusted Deployment Environment: IRAMVD 
+operates in a secure environment that traffic 
+authorities and municipal bodies control through 
+their managed infrastructure. The system uses OS -
+level isolation mechanisms which include 
+containerization and secure boot and access control 
+policies to protect its edge devices and cloud servers. 
+2. UntrustedVisualInput: All incoming video streams 
+are treated as untrusted. The system can receive 
+inputs that contain both authentic data and fake data 
+which malicious users created to evade detection and 
+create false violations. 
+3. Restricted Network Access: The edge inference 
+components function under limited network access 
+rights which permit only authenticated users to 
+connect with central servers. The inference modules 
+block all outbound network traffic except for specific 
+connections which they need to function.. 
+4. TrustedCoreDependencies: 
+The system depends on trusted core components. 
+The system depends on deep learning frameworks 
+and vision libraries and tracking algorithms which 
+researchers believe operate without intentional 
+security flaws although they acknowledge hidden 
+vulnerabilities may exist. 
+B. Attack Surface Analysis 
+IRAMVD is developed to take up the fight against numerous 
+realistic attack vectors. It can be seen from the angle of 
+intelligent traffic surveillance and law enforcement systems. 
+1) Adversarial Visual Manipulation 
+Attackers use visual perturbations for license plate 
+modifications and helmet reflections and irregular clothing 
+designs and their intent to break visual contact. The system 
+requiresIRAMVD to maintain frame usage throughout its 
+multiple temporal tracks whi ch it uses to validate neural 
+systems against symbolic rules.  
+The system confirms a violation only when it lasts through 
+the entire specified time period which helps to protect 
+against both temporary errors and deliberate security 
+breaches. 
+2) Resource Exhaustion (Denial of Service) 
+An attacker may attempt to overload the system by 
+injecting high-resolution video streams and excessive frame 
+rates and malformed inputs which will consume all available 
+computing and memory resources. 
+Mitigation: 
+• Adaptive frame sampling and throttling 
+• Bounded input resolution and buffer sizes 
+• Per-stream compute quotas at edge devices 
+• Graceful degradation under overload conditions 
+These mechanisms ensure uninterrupted real -time 
+operation. 
+3) Data Poisoning and False Evidence Injection: 
+A countered attempt may come from a malicious user by 
+injecting counterfeit video streams or playing back erroneous 
+historical evidence to generate false alarms or obstruct 
+genuine detections. 
+Mitigation: 
+• Secure camera authentication 
+[Page 6]
+• Timestamp and location metadata verification 
+• Optional watermarking and hash -based stream 
+validation 
+Security controls to prevent unauthorized stream 
+substitution and replay attacks. 
+4) Model Exploitation and Inference Manipulation 
+Hence, reconceiving approaches used to fetch out 
+vulnerabilities in neural architecture environments seem 
+eminent by conceiving some entirely freshly designed trials so 
+as to verify those vulnerabilities. 
+Mitigation: 
+IRAMVD does not rely exclusively on neural outputs. The 
+system uses symbolic reasoning based on traffic law 
+constraints to confirm all detected events because this method 
+prevents detection of logically inconsistent violations like 
+helmet violations for four-wheelers. 
+5) Privacy and Data Leakage Risks 
+It might lead to the overuse of traffic surveillance, which 
+is why many people fear regulatory action: Here, there may be 
+many unfortunate end effects as well. 
+Mitigation: 
+• No long-term storage of raw video frames 
+• Violation reports contain only abstracted metadata 
+• Optional on -device anonymization (face and non -
+relevant region blurring) 
+• Compliance with data minimization principles 
+C. Residual Risks 
+Despite robust safeguards, certain residual risks remain. 
+1) 1) Zero-Day Vulnerabilities 
+Unidentified vulnerabilities in libraries and frameworks, 
+constraints, or firmware may be exploited. 
+The Mitigation Strategy :uses three security measures which 
+include continuous patching and read-only containers 
+together with periodic security audits that operate within 
+protected environments. The first emergency condition 
+occurs during extreme weather situations which include 
+severe weather and nighttime glare and heavy obstacles that 
+obstruct visibility.  
+The detection system will be improved through the 
+upcoming use of multiple sensor technologies which will 
+include radar and thermal imaging systems. Side-Channel 
+Information Leakage occurs when processing systems 
+experience latency changes which disclose information 
+about the current traffic density and the presence of law 
+enforcement operations.  
+The risk level remains low under the current deployment 
+model yet becomes significant during multi-tenant 
+environments when security threats arise. 
+D. Summary 
+The threat model shows that IRAMVD can withstand actual 
+attack methods used in intelligent traffic enforcement 
+systems. The framework achieves its main goal through the 
+combination of neural perception and symbolic validation 
+together with strong infrastructure controls which protect 
+essential operational needs of smart cities in actual 
+deployment 
+I. EXPERIMENTAL EVALUATION 
+A. Experimental Setup 
+The researchers conducted experiments to test IRAMVD 
+through their examination of a specially prepared Indian 
+traffic video benchmark which included 2860 traffic event 
+annotations that were gathered from urban road intersections 
+and highways and arterial r oads in three different Indian 
+cities. The dataset contains six primary traffic violation types 
+which drivers on Indian roads commonly commit including 
+helmet violations and triple riding and red -light violations 
+and wrong -side driving and mobile phone usa ge while 
+driving and speeding violations.  
+The researchers performed video segment annotation to track 
+vehicle movement which helped them establish accurate 
+ground truth data that allowed them to calculate true positive 
+and false positive and true negative and false negative results. 
+The researcher s conducted IRAMVD testing by using two 
+different baseline systems as comparison points: 
+1. Rule-Only: Deterministic rule -based system using 
+handcrafted heuristics 
+2. Neural-Only: Deep learning –based perception 
+pipeline without symbolic reasoning 
+3. IRAMVD (Neuro -Symbolic): Full hybrid 
+framework with violation fusion and deduplication 
+The research experiments used an NVIDIA RTX 3080 GPU 
+together with an Intel i7 CPU and 32 GB RAM to operate on 
+Ubuntu 22.04 LTS. The researchers conducted each 
+experiment five times and they used the average results to 
+reduce the effects of runtime variati ons and frame sampling 
+methods. 
+ 
+B. Performance Metrics: 
+ 
+The system has been evaluated using the default 
+measurement of accuracy and its performance in real time: 
+• Precision (P): 
+𝑃 = 𝑇𝑃
+𝑇𝑃 + 𝐹𝑃 
+ 
+Measures enforcement reliability by minimizing false 
+accusations. 
+• Recall (R): 
+𝑅 = 𝑇𝑃
+𝑇𝑃 + 𝐹𝑁 
+ 
+Measures the system’s ability to capture all actual violations. 
+• F1-Score: 
+𝐹1 = 2 × 𝑃 × 𝑅
+𝑃 + 𝑅 
+ 
+• False Positive Rate (FPR): 
+𝐹𝑃𝑅 = 𝐹𝑃
+𝐹𝑃 + 𝑇𝑁 
+ 
+• Latency: Average processing time per frame batch 
+(milliseconds). 
+[Page 7]
+C. Comparative Results and Discussion 
+TABLE II 
+COMPARATIVE PERFORMANCE ANALYSIS 
+Metric Rule-
+Only 
+Neural-
+Only 
+IRAMVD 
+(Hybrid) 
+Gain 
+Vs 
+Best 
+Precision(%) 62 86 94 +8pp 
+Recall(%) 58 90 92 +2pp 
+F1-Score(%) 60 88 93 +5pp 
+False Positive 
+Rate(%) 
+38 14 6 -8pp 
+Avg. Latency 
+(ms) 
+18 13 34 +9% 
+ 
+ 
+The rule-only baseline shows low precision because it cannot 
+deal with visual occlusions and ambiguous visual situations. 
+The neural-only method succeeds in high recall performance 
+but generates excessive false-positive errors especially within 
+areas of he avy traffic and unregulated traffic patterns. 
+IRAMVD combines the strengths of both paradigms, 
+achieving 94% precision and 92% recall, with only a 
+marginal increase in latency. 
+D. Confusion Matrix Analysis 
+TABLE III 
+CONFUSION MATRIX FOR IRAMVD 
+ Voilation No-Voilation 
+Flagged As Voilation 1243(TP) 79(FP) 
+Flagged As Safe 106(FN) 1432(TN) 
+Total 1349 1511 
+ 
+ 
+The system classifies 2675 events correctly out of 2860 
+events which results in a 6 percent false positive rate that 
+shows a significant decrease compared to neural -only 
+systems and essential for court standards. 
+E. Per-Category Performance Analysis 
+TABLE IV 
+DETECTION PERFORMANCE BY TRAFFIC 
+VIOLATION CATEGORY 
+Voilation 
+Category 
+Test 
+Case
+s 
+Neural-
+Only(P/
+R) 
+Rule-
+Only(P/
+R) 
+IRAMVD(P/
+R) 
+Helmet 
+Voilation 
+612 88/92 71/64 96/95 
+Triple 
+Riding 
+431 85/90 68/61 94/93 
+Red Light 
+Jumping 
+508 91/89 75/70 95/94 
+Wrong 
+Side 
+Driving 
+462 82/87 73/66 93/91 
+Mobile 
+Phone 
+Usage 
+397 84/88 69/63 92/90 
+Overspeedi
+ng 
+450 90/91 78/72 96/94 
+Weighted 
+Avg 
+286
+0 
+87/90 72/66 94/92 
+ 
+ 
+The IRAMVD system achieves consistent performance 
+improvement across all types of violations while showing its 
+greatest progress in dealing with helmet non-compliance and 
+triple riding violations which require context-based reasoning 
+abilities. 
+ 
+F. Deduplication and Fusion Impact 
+ 
+TABLE V 
+IMPACT OF VIOLATION FUSION AND 
+DEDUPLICATION 
+Metric Neural Rule Raw 
+Total 
+Deduplicated 
+Voilation 
+Events 
+1678 1204 2882 2317 
+Reduction - - - -19.6% 
+Duplicates 
+Removed 
+- - 565 0 
+ 
+A substantial benefit of violations fusion is that it eliminates 
+duplicate alerts across kin engines, which reduces the 
+enforcement workload by 19.6%. 
+G. Statistical Significance 
+The statistical significance is established by using a 
+McNemar test to compare an IRAMVD system with the 
+neural-only baseline: 
+𝜒2 = 42.8, 𝑝 < 0.001 
+ 
+This shows that the improvement in performance by 
+IRAMVD is somewhat statistically significant at the 0.001 
+level of significance. 
+II. H. Violation Distribution Analysis 
+Fig. 4 illustrates the distribution of detected violations: 
+• Helmet Violations: 26% 
+• Red-Light Jumping: 18% 
+• Triple Riding: 16% 
+• Wrong-Side Driving: 14% 
+• Mobile Phone Usage: 13% 
+• Overspeeding: 10% 
+• Other: 3% 
+
+[Page 8]
+ 
+ 
+III. CONCLUSION AND FUTURE WORK 
+ 
+A. Conclusion 
+This paper introduced IRAMVD which serves as an Indian 
+Road-Aware Neuro -Symbolic framework that detects 
+multiple traffic violations through its dual function of 
+overcoming the deficiencies found in present -day vision -
+based traffic enforcement systems. The system uses deep 
+neural perception together with traffic rule -based symbolic 
+reasoning to achieve precise violation detection that can be 
+explained and expanded under Indian road conditions which 
+lack structured patterns. The actual traffic video data test ing 
+shows that IRAMVD outperforms both rule-only and neural-
+only baseline systems because it achieves 94 percent 
+precision and 92 percent recall while operating at real -time 
+speeds. The neuro -symbolic fusion strategy decreases the 
+occurrence of false posit ives while enabling the system to 
+identify multiple violations at once which serves as a key 
+need for effective traffic law enforcement. 
+ The system functions as an intelligent traffic management 
+solution because its modular framework together with its 
+deployment architecture and its explainable reasoning system 
+allows it to work with current traffic management systems. 
+The research results  show that hybrid AI systems create a 
+bridge between precise perception systems and legally sound 
+decision processes which are essential for secure operations 
+in smart city environments. 
+ 
+B. Future Work 
+While IRAMVD demonstrates strong performance, several 
+avenues remain for future enhancement: 
+1. Multisensor fusion: Fusion of radar and LiDAR or 
+thermal imaging can enhance robustness in 
+inclement conditions like fog, rain, or glaring night-
+time. 
+2. Adaptive and Learning-Based Rule Systems: Future 
+generations could involve adaptable rule sets 
+wherein the rules can dump autonomously 
+designated axioms and entities. 
+3. Expanded Violation Coverage: The system allows 
+for the addition of extra violations which include 
+seatbelt non-compliance and lane encroachment and 
+pedestrian right-of-way violations. 
+4. Large-Scale City Deployment: The permanent 
+implementation of this system throughout various 
+cities will allow testing of different traffic patterns 
+and different road system designs which exist in 
+those cities. 
+5. Ethics and Privacy Enhancements:  
+The research team will conduct additional 
+experiments to develop privacy-preserving learning 
+methods and enhanced anonymization techniques 
+which will enable compliance with upcoming data 
+protection laws. 
+ 
+IV. CONCLUSION AND FUTURE WORK 
+A. Summary of Contributions: 
+The researchers developed IRAMVD which operates as an 
+Indian Road-Aware Neuro-Symbolic Framework for Multi -
+Violation Traffic Detection system that solves problems with 
+current traffic enforcement systems that use either visual 
+detection or rule -based metho ds. The system establishes a 
+link between three vital elements required for effective street 
+traffic detection which includes street traffic detection 
+accuracy and street traffic detection capability and street 
+traffic detection system performance explanat ion. The 
+proposed framework demonstrates 94% precision and 92% 
+recall across six major traffic violation categories while 
+maintaining real -time processing performance which meets 
+requirements for live surveillance environments according to 
+testing conducte d on actual Indian traffic video datasets. 
+IRAMVD enables detection of multiple vehicle violations at 
+once without introducing extra delay time and achieves 
+19.6% reduction of duplicate violation alerts through its 
+systems that perform deterministic fusion  and temporal 
+deduplication. The framework achieves a 6% false positive 
+rate which exceeds the performance of neural -only baseline 
+methods. The explicit symbolic rule layer enables legally 
+auditable and explainable enforcement decisions, while the 
+neural p erception layer ensures robustness under 
+heterogeneous and unstructured Indian road conditions. The 
+dual contributions of these systems establish IRAMVD as an 
+efficient and scalable enforcement solution which functions 
+as an intelligent traffic control sys tem for smart city 
+implementations. 
+. 
+B. Limitations: 
+ 
+Despite its strong empirical performance, IRAMVD has 
+several limitations that warrant consideration. 
+1) Environmental Sensitivity: 
+The perception module will experience performance 
+problems when it operates in environmental conditions that 
+include heavy rain and fog and nighttime glare and complete 
+visual obstructions. The system needs extra protective 
+features because temporary verif ication methods only 
+decrease short-term errors during extreme testing conditions. 
+2) Rule Dependency: 
+The system uses manually defined traffic rules which 
+originate from regional regulations to operate its symbolic 
+reasoning component. The system needs to change traffic 
+
+[Page 9]
+rules because different areas have different laws and future 
+regulatory changes will affect existing rules. 
+3) Dataset Coverage: 
+The evaluation dataset includes various urban locations and 
+highway environments but lacks representation of rural roads 
+and construction zones and areas with extremely variable 
+traffic patterns which can impact generalization abilities. 
+4) Contextual Severity Modeling: 
+The existing system handles all detected violations in the 
+same way and it does not have a system to measure violation 
+severity and repeat offenses and it lacks the ability to assess 
+different risk factors which include school zones and 
+emergency corridors. 
+C. Future Research Directions: 
+ 
+There are several promising ways in which future work might 
+extend the IRAMVD. 
+1) Adaptive Rule Learning: 
+The system learns new traffic rules through reinforcement 
+learning and weak supervision by using its current system to 
+adapt to changing traffic patterns and specific regional traffic 
+conditions.. 
+2) Edge-Optimized Deployment: 
+Optimizing the framework for deployment on low -power 
+edge devices, which include smart cameras and embedded 
+platforms, leads to reduced latency and decreased need for 
+cloud services and better protection of user privacy. 
+3) Integration with ANPR and Risk Scoring: 
+The combination of IRAMVD and Automatic Number Plate 
+Recognition (ANPR) systems will provide law enforcement 
+agencies with two essential tools which include criminal 
+records for each vehicle and a system to assess current driver 
+behavior. 
+4) Predictive Traffic Safety Analytics: 
+The system extension which uses spatio -temporal violation 
+patterns for accident risk prediction will help authorities to 
+identify dangerous areas and develop safety measures. 
+5) Longitudinal Deployment Studies: 
+Long-term field deployment studies which assess 
+enforcement accuracy and operator trust and public 
+compliance will provide researchers with valuable 
+information about actual technology usage and its effects on 
+society.. 
+D. Closing Remarks: 
+ 
+The increasing complexity of urban traffic systems requires 
+enforcement systems to develop multiple enforcement 
+methods instead of relying on their existing single -method 
+systems. The traffic intelligence system developed through 
+neuro-symbolic architecture design demonstrates its ability to 
+produce precise results while providing understandable 
+explanations and handling large -scale traffic data for 
+essential urban safety operations. The Indian road conditions 
+require trustworthy automated traffic managemen t systems 
+which IRAMVD develops by achieving high detection 
+accuracy and maintaining real -time performance and 
+reducing enforcement noise. The framework establishes a 
+strong foundation for future research at the intersection of 
+computer vision, symbolic artificial intelligence, and 
+intelligent transportation system. 
+ARTIFACT AVAILABILITY 
+ 
+To promote reproducibility and facilitate further research, the 
+complete IRAMVD framework will be made available to the 
+research community. The study provides released artifacts 
+which include trained neural models and symbolic rule 
+definitions and experime ntal evaluation scripts and 
+anonymized traffic video annotations which were used in the 
+study. 
+Specifically, the artifact package contains: 
+• Evolution of the neuro-symbolic inference engine 
+• Localized object detection and multi-object tracking 
+configuration. 
+• Regulatory Bolt from the symbolic rule base of 
+Indian traffic legal codes 
+• The hotel is famous as a movie set, television 
+location and prestigious wedding venue. 
+The hotel is famous as  a movie set, television location and 
+prestigious wedding venue. 
+All of the simulations were performed using the following 
+computing environment: 
+• Components used are NVIDIA RTX 3080 GPU, 
+Intel Core i7 CPU, 32GB of RAM. 
+• Operating System: Ubuntu 22.04 LTS 
+Project Configuration: Python 3.11 with PyTorch, OpenCV, 
+YOLOv8, DeepSORT. 
+Following acceptance of the paper, the public repository link 
+and the instructions for dataset access will be made available. 
+REFERENCES 
+[1] [1] Ministry of Road Transport and Highways (MoRTH), Government 
+of India,  
+Road Accidents in India: Annual Report 2023, New Delhi, India, 2023. 
+[2] [2] J. Redmon and A. Farhadi, “YOLOv3: An incremental 
+improvement,” arXiv preprint arXiv:1804.02767, 2018. 
+[3] [3] N. Wojke, A. Bewley, and D. Paulus, “Simple online and realtime 
+tracking with a deep association metric,” in Proc. IEEE Int. Conf. 
+Image Processing (ICIP), Beijing, China, 2017, pp. 3645–3649. 
+[4] [4] A. d’Avila Garcez, L. C. Lamb, and D. M. Gabbay, “Neuro -
+symbolic AI: The state of the art,” Artificial Intelligence Review, vol. 
+55, no. 1, pp. 1–40, 2022. 
+[5] [5] S. Chandrasekaran, P. Balasubramanian, and K. R. Venugopal, 
+“Vision-based traffic violation detection: A survey,” IEEE 
+Transactions on Intelligent Transportation Systems, vol. 22, no. 10, pp. 
+6259–6277, 2021. 
+[6] [6] P. Sermanet, A. Frome, and E. Real, “Time-aware deep learning for 
+traffic scene understanding,” in Proc. IEEE Intelligent Vehicles 
+Symposium (IV), Las Vegas, NV, USA, 2020, pp. 1–6. 
+[7] [7] R. Girshick, J. Donahue, T. Darrell, and J. Malik, “Rich feature 
+hierarchies for accurate object detection and semantic segmentation,” 
+in Proc. IEEE Conf. Computer Vision and Pattern Recognition 
+(CVPR), Columbus, OH, USA, 2014, pp. 580–587. 
+[8] [8] B. Johnson, L. Bradshaw, and H. Hoffman, “Why don’t automated 
+systems gain trust? Human -centered AI in safety -critical systems,” 
+Communications of the ACM, vol. 63, no. 6, pp. 50–58, 2020. 
+[9] [9] A. Sharma and R. Singh, “Traffic law enforcement using computer 
+vision in unstructured roads,” Smart Cities, Springer, vol. 5, no. 3, pp. 
+812–829, 2022. 
+[10] [10] M. Buda, A. Maki, and M. A. Mazurowski, “A systematic study 
+of the class imbalance problem in convolutional neural networks,” 
+Neural Networks, vol. 106, pp. 249–259, 2018. 
+ 
+ 
+
+--- END OF research_paper (template).pdf ---
+
+
+
+--- START OF s41598-024-52703-2 (1) (1).pdf ---
+
+
+[Page 1]
+1
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports
+Efficient pneumonia detection 
+using Vision Transformers on chest 
+X‑rays
+Sukhendra Singh 1, Manoj Kumar 1, Abhay Kumar 2, Birendra Kumar Verma 1, 
+Kumar Abhishek 2 & Shitharth Selvarajan 3*
+Pneumonia is a widespread and acute respiratory infection that impacts people of all ages. Early 
+detection and treatment of pneumonia are essential for avoiding complications and enhancing 
+clinical results. We can reduce mortality, improve healthcare efficiency, and contribute to the global 
+battle against a disease that has plagued humanity for centuries by devising and deploying effective 
+detection methods. Detecting pneumonia is not only a medical necessity but also a humanitarian 
+imperative and a technological frontier. Chest X‑rays are a frequently used imaging modality for 
+diagnosing pneumonia. This paper examines in detail a cutting‑edge method for detecting pneumonia 
+implemented on the Vision Transformer (ViT) architecture on a public dataset of chest X‑rays 
+available on Kaggle. To acquire global context and spatial relationships from chest X‑ray images, 
+the proposed framework deploys the ViT model, which integrates self‑attention mechanisms and 
+transformer architecture. According to our experimentation with the proposed Vision Transformer‑
+based framework, it achieves a higher accuracy of 97.61%, sensitivity of 95%, and specificity of 
+98% in detecting pneumonia from chest X‑rays. The ViT model is preferable for capturing global 
+context, comprehending spatial relationships, and processing images that have different resolutions. 
+The framework establishes its efficacy as a robust pneumonia detection solution by surpassing 
+convolutional neural network (CNN) based architectures.
+Pneumonia is a common respiratory infection caused by multiple types of bacteria, viruses, and fungi. It is the 
+leading cause of morbidity and mortality worldwide, particularly among infants under the age of five and the 
+elderly. According to  WHO1, 1.4 million pneumonia-related fatalities among children under five in 2018. Chest 
+X-ray imaging is commonly used to diagnose pneumonia, as it can reveal important symptoms, such as increased 
+lung opacity and consolidation. However, it can be difficult to interpret a chest X-ray (CXR) because pneumonia 
+symptoms can be subtle and overlap with other lung diseases. Rapid and accurate diagnosis of pneumonia is 
+essential for expediting treatment and improving patient outcomes. Radiological images, such as chest X-rays 
+or CT scans, require specialized training and can be time-consuming to diagnose pneumonia.In recent years, 
+there has been significant interest to develop model using machine learning techniques that assist physicians 
+in diagnosing pneumonia using chest X-ray images. These techniques have shown promising results and may 
+improve the efficacy and accuracy of pneumonia diagnosis.
+By training a CNN on a dataset of chest X-ray images, Deep Learning (DL) 2–5 has been utilized to detect 
+ pneumonia6–10. As shown in Fig. 1, the CNN can learn to recognize patterns and associated features with pneu-
+monia, such as clouded lung areas to detect pneumonia.The model can then be used to classify new X-ray 
+images as normal or pneumonia. Multiple  studies11–14 have demonstrated the efficacy of this method in detecting 
+pneumonia with a high degree of accuracy. Attention mechanism isn DL  refers15–21 to a technique used in neural 
+networks to selectively focus on certain portions of an input as opposed to processing the entire input equally. In 
+image detection and classification, attention mechanisms can be utilized to concentrate the network’s attention 
+on specific regions of an image that are most important for making a classification decision. This can help the 
+network to improve its accuracy and decrease its computation needs. ViT models are a variant of the Transformer 
+ architecture22–26, which was originally designed for NLP applications. These models have been adapted for 
+image classification tasks by handling an image as a sequence of image segments that are then processed by the 
+OPEN
+1JSS Academy of Technical Education, Noida, India. 2National Institute of Technology Patna, Patna, India. 3School 
+of Built Environment, Engineering and Computing, Leeds Beckett University, LS1 3HE, Leeds, UK.  *email: 
+ShitharthS@kdu.edu.et
+[Page 2]
+2
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+transformer’s attention mechanism. In addition, the ViT model outperformed state-of-the-art (SOTA) techniques 
+on a broad variety of image classification tasks, making it an excellent candidate for the pneumonia diagnosis task.
+Motivation
+Vision Transformer architecture for pneumonia detection from CXR is motivated by the need for time to detect 
+this severe respiratory disease. Globally, pneumonia is one of the big causes of mortality. Early diagnosis and 
+treatment are crucial for improved patient outcomes. Traditional methods of evaluating CXR to diagnose pneu-
+monia are time-consuming and require specialized medical knowledge, which can lead to diagnostic errors and 
+treatment delays. In response to these challenges, DL techniques such as CNNs and RNNs have been developed 
+to automate the detection of pneumonia from CXR. However, these methods are inadequate to analyze complex 
+medical images. ViT architecture has demonstrated exceptional efficacy in a variety of vision tasks, including 
+image classification and object detection. It is a viable candidate for pneumonia detection from CXR because 
+it can extract global and local image features. Utilizing the power of self-attention mechanisms, ViT is able to 
+effectively capture complex patterns and relationships in X-ray images, resulting in improved pneumonia detec-
+tion accuracy and reliability. Therefore, the goal of utilizing ViT architecture for pneumonia detection from CXR 
+is to surmount the limitations of conventional methods and improve the precision and efficacy of DL models 
+for medical imaging analysis. Vision Transformer architectures are totally different from CNN architectures. 
+Transformer-based architectures were initially designed for sequence-to-sequence tasks in natural language 
+processing. CNN is primarily used for tasks like machine translation, text summarization, language modeling, 
+and sentiment analysis. These architectures have been customized into Vision Transformer architecture so that 
+they can be suitable for Image classification and analysis.
+The contribution of work is summarized as follows.
+• In this investigation, we propose a ViT-based architecture for pneumonia detection in CXR. This architecture 
+will be designed to effectively manage the large and complex medical images that are typical in CXR and will 
+be capable of detecting pneumonia with precision.
+• We will evaluate the accuracy of the proposed ViT architecture to that of existing DL techniques. This will 
+provide a thorough analysis of the benefits and drawbacks of our proposed approach compared to existing 
+methodologies.
+• We will evaluate the efficacy of the proposed ViT architecture using a CXR dataset that is publicly available. 
+This will entail training and testing the model using a set of performance metrics, including accuracy, recall, 
+precision, and F1 score, to measure its performance.
+We will present the proposed ViT architecture’s performance evaluation findings and analysis. This will 
+include a discussion of any limitations of the proposed model and recommendations for improving its efficacy 
+through future work.
+Organization of the paper
+The rest paper is structured as Sect. 2 discusses the background and working principle of the proposed architec-
+ture and other variants of Vision Transformer architecture. Section 3 presents recent applications and a review 
+of related studies. Section 4 describes the dataset characteristics and proposed architecture. Section 5 discusses 
+experiment specifications, results, and prospects of Vision Transformer architecture, followed by Sect. 6, which 
+represents the conclusion.
+Background and methodology
+In this section, the paper builds the foundation for the proposed architecture.
+Transformer architecture
+The transformer architecture is a neural  network27 designed for natural languages, such as language transla-
+tion, language modeling, and text summarization. The main concept of the transformer architecture is the self-
+attention mechanism, which assess the relative relevance of various words or sub-phrases in a given input. This is 
+Figure 1.  A sample CXR (normal and pneumonia) image.
+[Page 3]
+3
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+achieved by computing a "query," "key," and "value" for each word or sub-phrase, followed by adding a weighted 
+sum on the similarity between the query and the keys. Additionally, the transformer architecture utilizes a multi-
+head attention  mechanism28–30 to attend to various input positions. In addition to the self-attention  mechanism31, 
+the feed-forward neural network process the output of the self-attention layer to produce the better result in 
+Transformer model. The architecture also uses positional encoding to convey the position of the input image.
+Vision transformer derived from generic transformer architecture
+The Vision Transformer replaces the original transformer’s self-attention mechanism with a spatial attention 
+ mechanism32 which is designed to govern images’ two-dimensional grid structure. This enables the model to 
+analyze and comprehend the spatial relationships between different image regions. Itis an effective architecture for 
+image classification and computer vision tasks. Images are processed through the Transformer model, consisting 
+of spatial attention and a feed-forward neural network. The spatial attention mechanism applies the attention 
+to the image pixels, followed by the feed-forward neural network to the output of the attention mechanism. In 
+addition, this modeluses a patch-based strategy where an image is divided into smaller segments and learns 
+to focus separately on each patch. This allows the model to extract granular features and improve its accuracy.
+Working principle of Vision Transformer
+The fundamental concept of a ViT is the self-attention mechanism, which exploits both global and local fea-
+tures by focusing on distinct portions of the image. The self-attention mechanism is implemented by adding 
+self-attention layers with multiple heads that are known as transformer blocks. Each patch is converted into 
+corresponding 1-D vector and transmitted to the transformer. The transformer then uses self-attention to learn 
+the relationships between the various regions, and the resulting representation is input into a feed-forward 
+neural network to make a prediction.As the spatial resolution of the input does not constrain the self-attention 
+mechanism, one of the main advantages of ViT is their ability to handle images of arbitrary sizes. This model 
+can be trained on large images, such as high-resolution medical images, without downsampling or cropping. 
+Additionally, this model has been improved in recent variants such as  DeiT33,34, Swin-T 35,36, and  ReViT37 to 
+enhance their performance, reduce the number of parameters and computational costs, and make them more 
+efficient and scalable for practical applications.
+Self‑attention mechanism in Vision Transformer for image detection and classification
+A Vision  Transformer38,39 is a neural network that processes visual information using self-attention mechanisms. 
+Similar to how the Transformer architecture is used in natural language processing (NLP), ViT employs attention 
+mechanisms to evaluate the specific parts of an image in order to make accurate predictions. These networks 
+excel at image classification and object detection.
+Self attention techniques
+Self-attention15 is a technique that enables a model to selectively concentrate its processing on particular regions 
+of an image. Self-attention is typically applied to extracted feature maps generated by a CNN in the context of 
+images. Self-attention allows the model to determine the relative importance of various image regions by com-
+puting a set of attention weights for each region. These attention weights can then be applied to the feature maps 
+before their transmission to the remainder of the network.There are numerous methods to incorporate self-
+attention into images. A common technique is using a multi-head self-attention mechanism, in which the model 
+computes multiple sets of attention weights for various regions of the image and then combines them. This allows 
+the model to consider the entire image when making a prediction rather than just a specific region’s features. A 
+further method for image processing is to use a transformer-based model in which the self-attention mecha-
+nism focuses on various image regions when selecting a prediction. The transformer-based model is trained to 
+understand the relationships between multiple image regions and makes predictions based on this information.
+Self-attention in DL for image processing can be categorized into two main modules: channel attention and 
+spatial attention.
+Spatial attention networks. In contrast to conventional CNNs, which process entire images and extract features 
+from them, spatial attention  networks32,40 process only particular regions of an image. This is accomplished by 
+incorporating an attention mechanism that learns to weigh various image regions based on their significance to 
+the current task. By selectively attending to the relevant areas of an image, spatial attention networks can achieve 
+greater accuracy and efficiency when performing tasks such as image captioning, object detection, and visual 
+question answering. In addition, the attention mechanism improves the interpretability of these networks by 
+highlighting the regions of the image that the network is concentrating on for a given task.
+Channel attention. Channel  attention41,42 pertains to a mechanism’s ability to focus on particular channels of 
+the feature maps selectively. Typically, this is carried out by computing a set of attention weights for each channel 
+of the feature maps. These attention weights can then be applied to channels before their transmission through 
+the remainder of the network. This allows the model to concentrate its prediction on the channels that are most 
+informative.The combination of channel and spatial attention empowers the model to predict using both spa-
+tial information (the location of the specified portion within the image) and channel information (the features 
+extracted by the CNN). This results in more robust and generalizable modelsfor images that have not been seen.
+[Page 4]
+4
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Variants of Vision Transformer
+Several customizations in ViThave been experimented with to improve its performance or fit certain applications. 
+The main customization methods include.
+Patch size. The ViT architecture linearly embeds fixed-size input image patches. Patch size affects model per-
+formance. Larger patches capture global context but lose fine-grained details, while smaller patches may fail to 
+capture global context. To find better performance, optimal patch size has been used.
+Positional encoding. ViT incorporates spatial information into the model via learnable positional encodings. 
+These encodings assist the model understand image patch placements. ViT performance can be improved with 
+sine/cosine, spatial, or learned positional encodings.
+Architectural variations. To improve ViT, researchers have tried several architectural variations. A Pyramid 
+Vision Transformer (PVT) is a hierarchical modification that captures multi-scale information. The Convo-
+luted Vision Transformer (ConvViT) combines self-attention and convolutional layers to use local and global 
+information.
+Training methods. ViT performance and convergence have been improved using various training methods. 
+Data augmentation, regularization (dropout, weight decay), and advanced optimization algorithms (Adam, 
+RMSprop) are examples. Pretraining on ImageNet and transfer  learning43,44 have also been used to initialize ViT 
+models.
+Hybrid models. Hybrid designs integrate Convolutional Neural Networks (CNNs) and Vision Transformers 
+(ViTs) for tasks such as pneumonia detection in chest X-ray images, we first use a CNN as the feature extractor, 
+removing its fully connected layers while retaining its convolutional and pooling layers. The CNN-generated fea-
+ture maps are then separated into non-overlapping patches, and each patch is converted into a high-dimensional 
+embedding vector. These embeddings, which depict local characteristics, are then fed into the ViT model in 
+order to capture global dependencies and contextual information across the entire image. For final predictions, 
+a classification head is appended to the ViT output. The entire hybrid model, comprised of the CNN feature 
+extractor and the ViT model, is trained from beginning to end using labeled data, with fine-tuning strategies 
+tailored to the specific dataset and computational resources available. This approach maximizes the extraction 
+of both local and global information, optimizing performance for complex image analysis tasks.Transformers 
+process CNN-extracted features. This hybrid strategy uses CNNs (local feature extraction) and transformers 
+(global context modeling) to improve performance. Pyramid Vision Transformer (PVT captures multi-scale 
+information hierarchically. Multiple steps process features at varying resolutions. The model effectively captures 
+local and global information. A convoluted Vision Transformer (ConvViT) is a Self-attention mechanism with 
+convolutional layers. Self-attention models global context, while convolutional layers catch local patterns. This 
+combination improves the model’s local and global information handling.
+Attention mechanism. ViT’s architecture relies on attention techniques. Attention mechanism customization 
+may include Long-Range Arena (LRA) attention, Axial attention, and Shifted attention. LRA attention efficiently 
+handles input image long-range dependencies. It helps the model capture global context even when patches are 
+far apart.
+Axial attention captures dependencies along image axes (rows and columns). Self-attention is modified to 
+catch shifted or offset patch dependencies. This helps the model manage data spatial transformations.
+To have state-of-the-art performance and improved convergence,researchers have experimented with the 
+following pre-trained Vision Transformer architectures.
+DeiT (data-efficient image transformers). DeiT 34 uses self-attention mechanisms and patch-based processing 
+to outperform CNNs in image tasks with less labeled training data. Self-attention computes attention weights on 
+smaller image patches to efficiently capture long-range relationships and grasp the global context. The models 
+are pre-trained on large, unlabeled datasets to learn general visual representations, then fine-tuned on smaller, 
+task-specific datasets. Visual characteristics and hierarchical representations help the model transfer pre-trained 
+knowledge to the target task. Dropout and data augmentation increase generalization. Data-efficient image 
+transformers use self-attention, patch-based processing, pre-training, fine-tuning, transfer learning, and regu-
+larization to perform well in picture tasks without labeled data.
+Swin-T. Swin  transformer36,45, a new image understanding architecture, blends Transformers with CNNs. It 
+converts the input image into non-overlapping patches using transformer layers. Swin Transformer’s hierarchi-
+cal architecture organizes transformer layers into stages, making it unique. Lower stages process patch-level 
+information, whereas later stages capture broader contextual information. The hierarchical model efficiently 
+captures image local and global dependencies. Shift procedures help Swin Transformer model repair spatial 
+links. Swin Transformer uses Transformers’ self-attention mechanism and CNNs’ efficient processing to achieve 
+state-of-the-art results on image classification, object detection, and semantic segmentation with fewer compu-
+tational resources than other transformer-based models.
+[Page 5]
+5
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+ReViT. The Vision Transformer (ViT) architecture can accommodate inputs of different resolutions with 
+Resizable-ViT37. Traditional ViT models require fixed-size inputs, which can limit their adaptability in real-
+world applications with varied image sizes. Resizable-ViT solves this problem with "token shifting" and "layer 
+dropping." Token shifting requires scaling the input image and adapting position and token embeddings to the 
+new resolution. For lower inputs, layer-dropping skips model architectural layers based on input resolution, 
+reducing computing complexity. Resizable-ViT efficiently processes images of varied resolutions while doing 
+well on image recognition tasks by dynamically adapting to input sizes.
+All of these variants have been shown to enhance the performance and efficiency of Vision Transformers 
+and have been applied to a variety of tasks, including image recognition, object detection, and medical imaging, 
+with SOTA results.
+Recent applications of Vision Transformer architecture
+Vision Transformer (ViT) has attracted great interest in computer vision duties due to its capacity to process 
+images with high precision and efficiency. Recent developments and applications have been made to the ViT 
+architecture. The DeiT model, which enhances the training of ViT models using data augmentation and dis-
+tillation techniques, is one of the most significant innovations. The Swin Transformer model, which employs 
+hierarchical representations to enhance the performance of ViT models on large-scale image datasets, is another 
+innovation.Recent Vision Transformer architectures research has centered on a variety of applications, including.
+Object detection and instance segmentation
+ViT architecture is promising for object detection and instance segmentation because it possesses several essen-
+tial characteristics that make it suitable for these tasks. First, the self-attention mechanisms in ViT enable the 
+model to learn global relationships between various image components, which can be used to identify and 
+localize objects. ViT can be trained on large datasets with many labeled examples, which is essential for these 
+tasks because they require a large amount of data to learn the involved complex patterns. Finally, ViT can be 
+fine-tuned for specific object detection or instance segmentation  tasks46, allowing it to achieve high accuracy by 
+adapting to the requirements of these tasks.
+Dense predictions
+Dense prediction is the task of predicting a pixel-wise output for an input image, such as semantic segmenta-
+tion, where each pixel is designated as a specific object or background. The input image is divided into a series 
+of non-overlapping segments for dense prediction, which is then flattened and fed into the ViT architecture. 
+Self-attention allows ViT to record spatial information across these regions, and the output is shaped into a grid 
+corresponding to the original image. One of the benefits of employing ViT for dense prediction is that it can 
+learn to distinguish between objects of varying sizes and shapes without explicit object proposals or region-
+based attributes. ViT attends to all regions in the input image and learns to weigh their contributions based on 
+the significance of their contributions to the output. In addition, ViT can be trained end-to-end with large-scale 
+datasets like ImageNet to acquire general features that can be applied to subsequent tasks like a dense prediction. 
+In situations with limited labeled data, this makes ViT an attractive design for dense prediction.
+Self‑supervised learning
+Even without human annotations, ViT can be used for self-supervised  learning47,48. Self-supervised learning 
+teaches input data meaningful representations for classification, detection, and segmentation. Training the model 
+on a pretext task is one method to use ViT for self-supervised  learning49. Pretext tasks allow the model to learn 
+key characteristics from input data. Data augmentation to generate multiple perspectives of the same image 
+and training the ViT model to predict which views match is a common pretext challenge. Contrastive learning 
+teaches the ViT model to distinguish between similar and distinct images. Two arbitrary images are supplied to 
+the ViT model. The model is then trained to predict whether or not two images are identical.In both cases, the 
+ViT model discovers features that are independent of viewpoint, illumination, and other factors that affect the 
+appearance of input data. These learned characteristics can be used to establish supervised model weights or to 
+refine subsequent tasks.
+Multi‑modal learning
+Recent  research50 has examined the use of transformer-based architectures for multimodal unsupervised learn-
+ing from raw video, audio, and text. Using self-supervised learning techniques, the plan is to implement a 
+transformer-based architecture capable of handling multiple modalities and capable of predicting the next frame, 
+audio, or text given the current one.
+Efficient ViT architectures
+Recent efforts have been made to make Vision Transformer models more effective in terms of computation time 
+and memory consumption. Multiple architectures, such as Separable Vision Transformer (SepViT)51 and Revers-
+ible Vision Transformer (RViT)37,52, have been proposed by researchers that are capable of achieving comparable 
+or superior performance than conventional ViT models while being more energy-efficient. SepViT blocks employ 
+separable convolutions rather than conventional convolutions. This update minimizes the self-attention mecha-
+nism, the most computationally expensive component of ViT. Separable convolutions separate conventional 
+convolutions into depthwise and pointwise convolutions, requiring fewer parameters and computations. RViT 
+augments ViT design with reversible residual blocks. These blocks recreate input features from output features, 
+[Page 6]
+6
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+which increases the efficiency of gradient calculation during backpropagation. Reversible blocks enable models 
+with limited memory to be larger.
+Explainable AI
+ViT can be utilized in Explainable  AI33 to provide insight into how an image classification decision is made. By 
+using attention maps generated by ViT, it is possible to visualize which aspects of an image are most crucial to 
+the classification decision. This information can be used to clarify the model’s decision when communicating 
+with humans.
+In Table 1, the article summarizes recent contributions made for a range of tasks using Vision Transformer 
+architecture.
+Material and methods
+Dataset characteristics
+In the investigation, we used a publicly available chest X-ray (CXR) dataset from  Kaggle57,58. The same dataset 
+has also been utilized in numerous other investigations. The dataset consists of three sections: train, test, and 
+validation. Each section contains subfolders for Pneumonia and Normal CXRs. There are 5863 X-ray images 
+in total as shown in Table 2. The X-ray images used in the dataset were acquired at the Women and Children’s 
+Medical Center in Guangzhou from children aged one to five.These images were taken as part of the children’s 
+routine medical examinations.To assure the quality of the X-ray images used in the analysis, they were screened 
+by specialists for low-resolution or unreadable images. The remaining images were then evaluated by two physi-
+cian specialists, with any discrepancies resolved by a third specialist. This procedure was performed to teach an 
+AI system to make precise diagnoses.80% of the dataset has been allocated to the training set, 10% to the test 
+set, and 10% to the validation set, as shown in Table 3.
+Proposed architecture
+The proposed Architecture uses patch embeddings, positional encodings, several Transformer encoder layers, 
+self-attention, feed-forward neural networks, and a classification head to classify and analyze imageswhich are 
+shown in Fig. 2.
+Input embedding
+It requires reshaping the input image into patches as shown in Fig.  3 and applying a linear transformation in 
+order to obtain the embeddings. Let’s denote the input image as X ∈ R(H×W ×C) re H, W , and C, respectively, 
+represent the height, breadth, and number of channels. Each patch has a dimension of P × P , and there are N 
+patches in total. The input embedding can be represented the as E ∈ R(N ×D) where D is the number of dimen -
+sions of the embeddings.
+Positional encoding
+The input embeddings include positional information to capture the relative and absolute positions of the patches. 
+The positional encoding matrix P ∈ R(N ×D) added to the input embeddings E element by element.
+Transformer encoder
+Each layer of the Transformer Encoder is constituted of a multi-head self-attention mechanism and a position-
+wise feed-forward network as shown in Fig. 4.
+(a) Multi-head self-attention: The attention weights between the input embeddings are computed by the multi-
+head self-attention mechanism. It entails three linear transformations: Query (Q), Key (K), and Value (V), 
+with Q, K, and V ∈ R(N×D) Using the attention weights, the output of the self-attention mechanism is the 
+weighted sum of the values. The attention weights are calculated by Eq. (1).
+where Dh represents the dimension of each attention head.
+(b) Position-wise feed-forward network: The position-wise feed-forward network employs two linear trans-
+formations separated by a nonlinear activation function (such as ReLU). Let’s designate the attention 
+mechanism’s output as A ∈ R(N×D) The representation of the position-wise feed-forward network is as 
+according to Eq. (2).
+where W 1 ∈ R(D×dFFN ),b1 ∈ R(1×dFFN ),W 2 ∈ R(dFFN×D ),b2 ∈ R(1×D) .
+These two sub-layers are applied parallel to the input sequence and then combined to generate the encoder 
+layer’s output. The process is repeated multiple times to form a stack of encoder layers, where each encoder layer 
+builds upon the representation learned by the preceding encoder layer, enabling the model to learn increasingly 
+complex and generalized representations of the input sequence.
+(1)Attention(Q , K , V ) = softMax
+((
+QK T
+)
+/√(Dh )
+)
+V
+(2)FFN(A) = max(0,A × W 1 + b1) × W2 + b2
+[Page 7]
+7
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Table 1.  Insight into related recent research.
+Article references Approach Major findings
+Gap identified and future direction for 
+enhancement
+“ An Image is Worth 16 × 16 Words: Trans-
+formers for Image Recognition at Scale”53
+Each segmented patch is linearly projected 
+into a high-dimensional embedding space 
+that result is then input into the Trans-
+former encoder.They replaced the tradi-
+tional CNN backbone with a Transformer 
+encoder-decoder framework, thereby 
+enabling a more unified framework across 
+modalities obtained cutting-edge perfor-
+mance on benchmark datasets with fewer 
+computational resources than traditional 
+CNN-based methods
+results can be improved by adjusting the 
+number of layers, the dimensionality of the 
+embeddings, or the design of the attention 
+mechanism and by fine-tuning the archi-
+tecture to strike a balance between model 
+capacity and computational efficiency
+Transformers demand more processing 
+power and memory than convolutional 
+neural networks (CNNs), and the article 
+does not elucidate how to address this. 
+Transformers are less interpretable than 
+CNNs, and interpretability strategies are 
+not discussed in the article. Patch size, 
+computational efficiency, and performance 
+compromises are not considered. Resolving 
+these issues could facilitate the scalability 
+of image recognition methods based on the 
+Transformer
+“Show, attend and tell: Neural image caption 
+generation with visual attention”17
+The authors demonstrate the effectiveness of 
+incorporating a visual attention mechanism 
+into the caption generation process. The 
+attention mechanism allows the model to 
+focus on various portions of the image while 
+generating each word in the caption, thereby 
+improving the alignment between the image 
+content and the generated text
+superior caption quality in comparison to 
+previous methods. By focusing on pertinent 
+image regions, the model generates more 
+accurate and descriptive captions that 
+capture the image’s most important objects, 
+actions, and relationships
+The approach lacks fine-grained attention 
+because it employs a mechanism for soft 
+attention that assigns weights to image 
+regions rather than concentrating on par-
+ticular objects or attributes. This hinders 
+the capability of the model to generate cap-
+tions with precise details. The article does 
+not discuss strategies or techniques for 
+fine-tuning the interpretation and control 
+of the attention mechanism, thereby limit-
+ing the adaptability and interpretability
+“Deep MRI Reconstruction with Generative 
+Vision Transformers”54
+Deep generative network GVTrans trans-
+lates noisy variables and latent onto high-
+quality MR images. Multi-layer architecture 
+improves image resolution. Cross-attention 
+transformer modules receive up-sampled 
+feature maps in each layer. MR images are 
+masked using the same sampling pattern as 
+the under-sampled acquisition for test data 
+inference. Optimized network parameters 
+ensure that reconstructed and original 
+k-space samples match
+better image quality than CNN-based 
+reconstructions with and without self-
+attention processes and can adjust to indi-
+vidual test subjects. GVTrans may improve 
+deep MRI reconstruction applicability and 
+generalizability
+Using a larger dataset of fully-sampled 
+MRI acquisitions for training GVTrans, 
+incorporating additional information, such 
+as patient demographics or clinical history, 
+into the training process, and developing 
+a more efficient training algorithm for 
+GVTrans can improve the performance of 
+the proposed architecture GVTrans.Train-
+ing in the proposed GVTrans architecture 
+is computationally intensive.GVTrans 
+may be unable to reconstruct images with 
+high levels of noise or anomalies, as well as 
+images with very low sampling rates
+“ A Simple Single-Scale Vision Transformer 
+for Object Detection and Instance Segmen-
+tation”46
+Universal Vision Transformer (UViT), an 
+intuitive and efficient Vision Transformer 
+architecture, was proposed for object detec-
+tion and instance segmentation
+UViT is a simple yet efficient model that 
+achieves competitive performance on the 
+COCO benchmarks for object detection 
+and instance segmentation
+On some tasks, such as dense predic-
+tion, UViT may not attain the same level 
+of performance as more complex Vision 
+Transformer architectures. UViT may not 
+be as effective as models for object detec-
+tion and instance segmentation that are 
+more specialized
+“Training data-efficient image transformers 
+& distillation through attention”34
+A large, pre-trained convolutional neural 
+network (CNN) is used as a teacher to train 
+a smaller, more efficient transformer-based 
+student model in this method. The student 
+model gains knowledge from the teacher 
+by observing the instructor’s output, which 
+is represented by a distillation token. The 
+distillation token is added to the input of the 
+student model and is utilized to direct the 
+attention mechanism
+DeiT-B model obtains 85.2% top-1 accuracy 
+on ImageNet with 86 M-parameterwhen 
+trained with 100 epochs and 16 GPUs
+The distillation token can be computation-
+ally expensive to compute, which is a limi-
+tation. Another limitation is that the distil-
+lation token can result in a reduction in 
+the attention weights’ diversity.It would be 
+possible to enhance the distillation token 
+by employing a more efficient method for 
+computing it. The distillation token could 
+be modified to promote attention weights 
+with greater diversity. The method could be 
+applied to additional tasks, including object 
+detection and segmentation
+“ Analyzing Transfer Learning of Vision 
+Transformers for Interpreting Chest Radi-
+ography”55
+utilizing a standard Vision Transformer 
+architecture and training it on a large col-
+lection of natural images. Using a limited 
+number of labeled examples, they then 
+refined this model using the CheXpert or 
+Pediatric Pneumonia dataset
+A model’s performance on a medical image 
+classification task can be considerably 
+enhanced by transfer learning from a previ-
+ously trained Vision Transformer. There is 
+no significant effect on the efficacy of the 
+model by fine-tuning
+Domain adaption and other transfer 
+learning methods may improve Vision 
+Transformers’ medical image classification 
+performance in future research. The mod-
+el’s performance can further be improved 
+using larger fine-tuning datasets
+“Introducing Convolutions to Vision 
+Transformers”56
+a novel design called Convolutional Vision 
+Transformer (CvT) that increases Vision 
+Transformers (ViTs) performance and 
+efficiency by adding convolutions.A con-
+volutional token embedding layer replaces 
+the token embedding layer. This enables 
+the CVT to discover spatial relationships 
+between tokens, thereby enhancing the 
+model’s capacity to represent complex visual 
+patterns. Convolutional attention operation 
+replaces the attention operation. This ena-
+bles the CvT to efficiently compute attention 
+weights across vast spatial regions, thereby 
+enhancing the model’s capacity to capture 
+global context
+CvT outperforms ViTs on a variety of image 
+classification tasks while requiring fewer 
+parameters and FLOPs. For instance, the 
+CvT achieves a top-1 accuracy of 89.4% on 
+the ImageNet-1 k dataset, which is compa-
+rable to the state-of-the-art performance of 
+ResNet-50 despite employing only 1/10th of 
+the parameters and 1/100th of the FLOPs
+CvTs are harder to train and slower at 
+inference hen compared with ViT’s. Using 
+deeper and broader CvT models to further 
+improve performance, adding residual con-
+nections between CvT layers to improve 
+training stability, and employing dilated 
+convolutions and group convolutions to 
+improve the model’s ability to represent 
+long-range dependencies can further 
+improve the proposed model
+[Page 8]
+8
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Classification layer. This layer utilizes the encoder layers’ output to predict pneumonia’s presence or absence. 
+This prediction may be made using a fully connected or convolutional layer.
+Loss function. This component evaluates the model’s efficacy based on the predicted and actual labels. In this 
+endeavor, binary cross-entropy loss is a common loss function.
+Ethical standards
+No human participants were involved in the study. Dataset is available on Internet.
+Result and discussions
+Performance indicators
+Various evaluation metrics are used to measure the effectiveness of machine learning models, and each has its 
+benefits and drawbacks. The most prevalent metrics include.
+Table 2.  Class distribution of the dataset.
+Class No of images
+Pneumonia (P) 4273
+Normal (N) 1583
+Table 3.  Partitioning of training, testing, and validation datasets.
+# of images # of images from P class # of images from N class
+Training data 4684 3205 1479
+Validation data 586 360 226
+Test data 586 330 256
+Figure 2.  The proposed system design architecture.
+[Page 9]
+9
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Accuracy
+This is the most important metric for evaluating a model and is defined as the proportion of correct predictions 
+to the total number of predictions made by the model. It is evaluated using Eq. (3).
+Figure 3.  Dataset input image in the form of smaller patches.
+Figure 4.  Internal design of a transformer encoder.
+[Page 10]
+10
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Precision
+Higher-precision classifiers produce fewer false positives. High accuracy reduces the likelihood of misclassifying 
+negative instances as positive in numerous applications where false positives have severe consequences. Preci -
+sion is calculated by Eq. (4).
+Recall (sensitivity or true positive rate)
+Classifiers with higher recall have fewer false negatives. The classifier captures positive cases and reduces false 
+negatives. A classifier with lower recall has more false negatives. The recall is determined by Eq. ( 5)
+F1 Score
+The F1 Score is the harmonic mean of precision and recall, indicating patterns between them and calculated 
+using Eq. (6).
+ROC curve
+ROC curves evaluate binary classification models. The model separates positive and negative events across clas-
+sification thresholds. ROC curve form and position indicate model discrimination. The ROC curve shows the 
+trade-off between positive and negative identification when the classification threshold changes. AUC increases 
+discrimination and model performance.
+Confusion matrix
+The confusion matrix tabulates classification model performance. It compares predicted labels to real labels and 
+shows different classification outcomes. The confusion matrix reveals model performance. True positives (TP) 
+and true negatives (TN) are situations that were accurately predicted. False positives (FP) and false negatives (FN) 
+are cases of misclassification. These values allow us to generate model performance metrics including accuracy, 
+precision, recall, and F1 score.
+Model’s training
+To demonstrate our proposed architecture, we experimented with a benchmark dataset of CXR images, one of 
+the most frequently downloaded datasets for testing on Kaggle. Using these studies and datasets for binary clas-
+sification. Python 3.7, Anaconda/3, and CUDA/10 are installed on a Windows server with an i5 CPU, 2 GB GPU, 
+and 8 GB RAM, as well as an Anaconda/3 distribution. In addition to the parameters listed above, the Python 
+libraries Pytorch, OpenCV , matplotlib, os, math, and NumPy are used. During training, the data is partitioned 
+into batches, and the model’s parameters are modified based on each cohort’s average loss. The group size dictates 
+the number of samples utilized during each update phase. A larger sample size can speed up the training rate but 
+may require additional memory. CrossEntropyLoss was chosen as the experiment’s loss function. During training, 
+the model minimizes this loss function. It computes the negative log-likelihood of expected class probability and 
+actual labels. The training algorithm modifies the parameters of the model. In an experiment, the Adam opti -
+mizer was used to alter the learning rate for each parameter based on gradient estimates of the first and second 
+moments. Pytorch was used for the implementation, and training was conducted in a GPU environmentThe 
+learning rate establishes how much model parameters are updated with each optimizer iteration. The multiplica-
+tive factor of the learning rate is used to modify the learning rate at each epoch or phase, enabling more granular 
+control of the learning rate during training. The learning rate’s multiplicative factor can help the model converge 
+on a superior solution. Table 4 demonstrates the experiment’s hyperparameter settings. The novelty of our work 
+lies in the application of the Vision Transformer (ViT), specifically utilizing the DEIT_Base_Patch16_224 pre-
+trained weights, to the domain of medical imaging for pneumonia detection. While ViT has shown promise in 
+various fields, its adaptation to medical imaging, especially chest X-ray analysis, is relatively unexplored. Our 
+approach capitalizes on ViT’s ability to capture intricate spatial relationships in images, offering advantages over 
+traditional methods. We demonstrate improved performance and potential for enhanced pneumonia detection 
+accuracy, marking a significant contribution to the field of medical image analysis.
+A model’s performance depends on these hyperparameters and others. To enhance model performance, 
+selecting hyperparameter values requires careful analysis and experimentation. For optimal performance, hyper-
+parameters must be explored and fine-tuned based on task, dataset, and model architecture.
+(3)Accuracy = (True Positives+ True Negatives)
+(True Positives+ True Negatives+ False Positives+ False Negatives)
+(4)Precision= True Positives
+(True Positives+ False Positive)
+(5)Recall= True Positives
+(True Positives+ False Negatives)
+(6)FScore = 2 ∗(Precision∗Recall)
+(Precision_Recall)
+[Page 11]
+11
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Performance evaluation
+The model’s train-validation accuracy against the epoch curve shows its learning and generalization. If training 
+accuracy increases but validation accuracy plateaus or falls, it indicates overfitting. Convergence and excellent 
+accuracy for both curves show learning and generalization efficacy. The train-validation loss versus epochs curve 
+shows model optimization. The model initially matches data better when training and validation loss decreases. 
+Overfitting occurs when training loss decreases with increasing validation loss. Convergence and low loss suggest 
+error minimization and good generalization for both curves.
+Table 5 presents the performance delivered by the proposed approach and Figs. 5 and 6 show the relationship 
+between accuracy and epoch and loss and epoch, respectively. Figures 5 and 6 show that during training, valida-
+tion accuracy gradually improves along with test accuracy and reaches 97.61 and other performance indicators 
+are also indicating outperforming results.
+Confidence intervals test
+This is statistical tool used to estimate the range within which a performance metric, such as accuracy, sensitivity, 
+or specificity, is likely to lie. They provide a range of values that likely contains the true value of the parameter, 
+along with a level of confidence.
+Confidence interval (CI) is calculated using the formula described using Eq. (7 )
+Z is the z-score corresponding to the desired confidence level. For example, for a 95% confidence level, the 
+Z-score is approximately 1.96.
+(7)AccuracyCI = Accuracy ± Z ×
+√
+Accuracy × (1 − Accuracy)
+sample size
+Table 4.  Hyper-parameter setting used in the experiment.
+Hyperparameter Value
+Batch size 16
+Criterion CrossEntropyLoss
+Learning rate 1e − 05
+Optimizer Adam
+Device Cuda
+Image resize 224 × 224
+The multiplicative factor of the learning rate 0.995
+Table 5.  Performance delivered by the proposed model.
+Epoch Split ratio Loss (train) Accuracy (train) Loss (test) Accuracy (test) Sensitivity Specificity F score AUC 
+30 0.20 0.057 98.04 0.069 97.61 0.949 0.981 0.952 0.966
+Figure 5.  Accuracy variation vs epoch curve.
+[Page 12]
+12
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Interpretation
+The accuracy reported as 97.61% with a 95% confidence level, the confidence interval is between 96.2 and 98.9%. 
+This means we can be 95% confident that the true accuracy of our proposed model lies within this range.
+Matthews correlation coefficient (MCC)
+The Matthews correlation coefficient (MCC) is a measure used in machine learning to evaluate the quality of 
+binary classification. The formula for MCC is described in Eq. (8).
+From the confusion matrix on the test data.
+TP = 152, TN = 420, FP = 6, FN = 8
+MCC ≈ 0.9396The Matthews correlation coefficient (MCC) typically ranges from − 1 to + 1:
++ 1 indicates a perfect prediction,
+0 suggests a random prediction,
+− 1 indicates a total disagreement between prediction and observation.
+In this case, an MCC of approximately 0.9396 indicates a very strong positive correlation between the pre -
+dicted and actual classifications. This suggests an excellent classification performance for the model used.
+The confusion matrix in Fig. 7 shows that out of 586 samples in the test data, our proposed model showed 152 
+cases of TP and 420 cases of TN and 6 cases of FP ,and 8 cases of FN which indicates a test accuracy of 97.61%. 
+Variation of precision and recall is represented by Figs. 8 and 9, which indicates that recall converse after 15 epocs 
+while precision converse after 35 epocs. The ROC of the suggested architecture, depicted in Fig.  10, indicates 
+an AUC value of 0.96. It denotes the capability of our proposed model to identify the presence or absence of 
+(8)MCC = TP× TN − FP× FN√(TP+ FP)(TP+ FN)(TN + FP)(TN + FN)
+Figure 6.  Loss vs epoch curve.
+Figure 7.  Confusion matrix based on test data for the proposed model.
+[Page 13]
+13
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Figure 8.  Model precision with epocs.
+Figure 9.  Model recall with epocs.
+Figure 10.  ROC curve with AUC 0.96 of proposed work.
+[Page 14]
+14
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+pneumonia. A precision-recall value of 0.94, depicted in Fig. 11, suggests that the model demonstrates a notable 
+capacity to accurately predict positive instances while capturing a substantial proportion of the true positive 
+instances. The precise interpretation may differ depending on the domain of application and the particular 
+objectives of the classification endeavor.
+Discussion
+Table 6 presents the performance of pre-train CNN architectures keeping all hyper-parameters values the same 
+to make a comparison on the same datasets. It shows that Vision Transformer architecture offersa great improve-
+ment over all other architectures, The proposed architecture offers an accuracy of 97.61% and an AUC of 0.96 
+but this more extraordinary performance is obtained by compromising on training time because the training 
+was a bit time taking when compared with different architectures.
+Research prospects in Vision Transformer
+Vision Transformer (ViT) architecture research prospects for image classification hold tremendous potential 
+for advancing the field. Future research can concentrate on enhancing the performance of ViT models by opti-
+mizing their architecture, refining training strategies, and investigating novel techniques to improve precision, 
+robustness, and efficiency. In addition, efforts can be focused on developing interpretability methodologies for 
+ViT models, allowing for a better comprehension of their decision-making process. It is possible to investigate 
+efficient training and inference methods to reduce computational complexity and accelerate model deployment. 
+Figure 11.  Precision–recall curve of the proposed method.
+Table 6.  Performance evaluation relative to other architectures utilizing the same dataset.
+Sr no. Architecture Refs. Accuracy F-score # of trainable parameters
+# of non-trainable 
+parameters
+1 VGG16 59 92.14 0.9234 50,178 14,714,688
+2 VGG19 60 90.22 0.8999 50,178 20,024,384
+3 ResNet50 61 82.37 0.8281 200,706 23,587,712
+4 ResNet101 62 75.96 0.7593 200,706 42,658,176
+5 ResNet152 63 87.18 0.8734 200,706 58,370,944
+6 ResNet50V2 64 89.26 0.8937 200,706 23,564,800
+7 ResNet101V2 65 92.62 0.9250 200,706 42,626,560
+8 ResNet152V2 66 92.94 0.9312 200,706 58,331,648
+9 InceptionV3 67 89.42 0.8937 102,402 21,802,784
+10 InceptionResNetV2 68 90.70 0.8989 200,706 58,331,648
+11 DenseNet121 69 91.82 0.9171 100,354 7,037,504
+12 DenseNet169 70 88.78 0.8874 163,074 12,642,880
+13 DenseNet201 71 91.83 0.9171 188,162 18,321,984
+14 NASNetLarge 72 88.14 0.8812 975,746 84,916,818
+15 Quaternion Residual Network 73 93.75 0.9405 560,769 8,576
+16 Vision Transformer Proposed in the paper 97.61 0.9500 85,800,194 0
+[Page 15]
+15
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+Adapting ViT to scenarios with limited data using semi-supervised and few-shot learning techniques will increase 
+its applicability. In addition, domain-specific extensions, hybrid architectures that combine ViT with other 
+models, and real-world deployments will contribute to the advancement and practical application of ViT in 
+image classification tasks.
+Conclusion
+The article conducts a thorough analysis of a Vision Transformer (ViT) framework for pneumonia detection in 
+chest X-rays. ViTs’ ability to analyze complex image relationships is showcased, demonstrating superior per -
+formance over traditional CNNs and other advanced techniques. ViTs excel in capturing global context, spatial 
+relations, and handling variable image resolutions, leading to accurate pneumonia detection. The study aims to 
+assess this method’s effectiveness by comparing it to state-of-the-art models on a diverse CXR dataset. The results 
+reveal ViT’s superiority with an accuracy of 97.61%, sensitivity of 95%, and specificity of 98%. In conclusion, the 
+ViT-based approach holds promise for early pneumonia detection in CXRs, offering substantial development 
+potential in this field. However, limitations include data scarcity and the need for real-world validation. Future 
+directions encompass enhancing interpretability, addressing model robustness, and conducting clinical trials 
+for practical deployment.
+Data availability
+In this work, a public dataset of CXR (https:// data. mende ley. com/ datas ets/ rscbj br9sj/2) has been used.
+Received: 20 June 2023; Accepted: 22 January 2024
+References
+ 1. Pneumonia in children. WHO (2019). https:// www. who. int/ news- room/ fact- sheets/ detail/ pneum onia
+ 2. Khan, S. H. et al. COVID-19 detection and analysis from lung CT images using novel channel boosted CNNs. Expert Syst. Appl.  
+229, 120477 (2022).
+ 3. Khan, S. H. et al. COVID-19 detection in chest X-ray images using deep boosted hybrid learning. Comput. Biol. Med. 137, 104816 
+(2021).
+ 4. Khan, S. H., Sohail, A., Zafar, M. M. & Khan, A. Coronavirus disease analysis using chest X-ray images and a novel deep convo -
+lutional neural network. Photodiagnosis Photodyn. Ther. 35, 102473 (2021).
+ 5. Singh, S., Tripathi, B. K. & Rawat, S. S. Deep quaternion convolutional neural networks for breast Cancer classification. Multimed. 
+Tools Appl. 82, 31285–31308 (2023).
+ 6. Liang, G. & Zheng, L. A transfer learning method with deep residual network for pediatric pneumonia diagnosis. Comput. Methods 
+Programs Biomed. 187, 104964 (2020).
+ 7. Nishio, M., Noguchi, S., Matsuo, H. & Murakami, T. Automatic classification between COVID-19 pneumonia, non-COVID-19 
+pneumonia, and the healthy on chest X-ray image: Combination of data augmentation methods. Sci. Rep. 10, 1–6 (2020).
+ 8. Asif, S., Zhao, M., Tang, F . & Zhu, Y . A deep learning-based framework for detecting COVID-19 patients using chest X-rays. 
+Multimed. Syst. https:// doi. org/ 10. 1007/ s00530- 022- 00917-7 (2022).
+ 9. Suryaa, V . S., Annie, A. X. & Aiswarya, M. S. Efficient DNN ensemble for pneumonia detection in chest X-ray images. Int. J. Adv. 
+Comput. Sci. Appl. 12, 759–767 (2021).
+ 10. Singh, S., Kumar, M., Kumar, A., Verma, B. K. & Shitharth, S. Pneumonia detection with QCSA network on chest X-ray. Sci. Rep. 
+13, 9025 (2023).
+ 11. Duong, L. T., Nguyen, P . T., Iovino, L. & Flammini, M. Automatic detection of COVID-19 from chest X-ray and lung computed 
+tomography images using deep neural networks and transfer learning. Appl. Soft Comput. 132, 109851 (2023).
+ 12. Duong, L. T., Le, N. H., Tran, T. B., Ngo, V . M. & Nguyen, P . T. Detection of tuberculosis from chest X-ray images: Boosting the 
+performance with Vision Transformer and transfer learning. Expert Syst. Appl. 184, 115519 (2021).
+ 13 Duong, L. T., Nguyen, P . T., Iovino, L. & Flammini, M. Deep learning for automated recognition of COVID-19 from chest X-ray 
+images. medRxiv. https:// doi. org/ 10. 1101/ 2020. 08. 13. 20173 997 (2020).
+ 14. Kazemzadeh, S. et al. Deep learning detection of active pulmonary tuberculosis at chest radiography matched the clinical perfor-
+mance of radiologists. Radiology 306, 124–137 (2023).
+ 15. Ramachandran, P . et al. Stand-alone self-attention in vision models. Adv. Neural Inform. Process. Syst. 32 (2019).
+ 16. Guo, M.-H., Lu, C.-Z., Liu, Z.-N., Cheng, M.-M. & Hu, S.-M. Visual attention. Network. 14, 1–12 (2022).
+ 17. Xu, K. et al. Show, attend and tell: Neural image caption generation with visual attention. in 32nd Int. Conf. Mach. Learn. ICML 
+2015 3, 2048–2057 (2015).
+ 18. Wang, F . et al. Residual attention network for image classification. in Proc.—30th IEEE Conf. Comput. Vis. Pattern Recognition, 
+CVPR 2017 2017-Janua, 6450–6458 (2017).
+ 19. Singh, S. et al. Deep attention network for pneumonia detection using chest X-ray images. Comput. Mater. Contin. 74, 1673–1690 
+(2023).
+ 20. Kumar, M. & Biswas, M. Human activity detection using attention-based deep network. Springer Proc. Math. Stat. 417, 305–315 
+(2023).
+ 21. Kumar, M., Patel, A. K., Biswas, M. & Shitharth, S. Attention-based bidirectional-long short-term memory for abnormal human 
+activity detection. Sci. Rep. 13, 14442 (2023).
+ 22. Carion, N. et al. End-to-end object detection with transformers. in Lecture Notes in Computer Science (including subseries Lecture 
+Notes in Artificial Intelligence and Lecture Notes in Bioinformatics) vol. 12346 LNCS 213–229 (2020).
+ 23. Potamias, R. A., Siolas, G. & Stafylopatis, A. G. A transformer-based approach to irony and sarcasm detection. Neural Comput. 
+Appl. 32, 17309–17320 (2020).
+ 24. Wolf, T. et al. Transformers: State-of-the-art natural language processing. 38–45 (2020). doi:https:// doi. org/ 10. 18653/ v1/ 2020. 
+emnlp- demos.6.
+ 25. Singh, S. & Mahmood, A. The NLP cookbook: Modern recipes for transformer based deep learning architectures. IEEE Access 9, 
+68675–68702 (2021).
+ 26. Wolf, T. et al. Huggingface’s transformers: State-of-the-art natural language processing. arXiv Prepr. arXiv1910.03771 (2019).
+ 27. Vaswani, A. et al. Attention is all you need. Adv. Neural Inform. Process. Syst. 2017-Decem, 5999–6009 (2017).
+ 28. Al-Deen, H. S. S., Zeng, Z., Al-Sabri, R. & Hekmat, A. An improved model for analyzing textual sentiment based on a deep neural 
+network using multi-head attention mechanism. Appl. Syst. Innov. 4.4, 85 (2021).
+[Page 16]
+16
+Vol:.(1234567890)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+ 29. Feng, Y . & Cheng, Y . Short text sentiment analysis based on multi-channel CNN with multi-head attention mechanism. IEEE 
+Access  9, 19854–19863 (2021).
+ 30. Park, S. et al. Multi-task Vision Transformer using low-level chest X-ray feature corpus for COVID-19 diagnosis and severity 
+quantification. Med. Image Anal. 75, 102299 (2022).
+ 31. Zhu, J. et al. Efficient self-attention mechanism and structural distilling model for Alzheimer’s disease diagnosis. Comput. Biol. 
+Med. 147, 105737 (2022).
+ 32. Chen, C., Gong, D., Wang, H., Li, Z. & Wong, K. Y . K. Learning spatial attention for face super-resolution. IEEE Trans. Image 
+Process. 30, 1219–1231 (2020).
+ 33. Mondal, A. K., Bhattacharjee, A., Singla, P . & Prathosh, A. P . XViTCOS: Explainable Vision Transformer based COVID-19 screen-
+ing using radiography. IEEE J. Transl. Eng. Heal. Med. 10, 1–10 (2021).
+ 34. Touvron, H. et al. Training data-efficient image transformers & distillation through attention. in International Conference on 
+Machine Learning 10347–10357 (2021).
+ 35. Islam, M. N. et al. Vision Transformer and explainable transfer learning models for auto detection of kidney cyst, stone and tumor 
+from CT-radiography. Sci. Rep. 12, 1–14 (2022).
+ 36. Liu, Z. et al. Swin transformer: Hierarchical Vision Transformer using shifted windows. in Proceedings of the IEEE/CVF Interna-
+tional Conference on Computer Vision 10012–10022 (2021).
+ 37. Zhu, Y . et al. Make a long image short: Adaptive token length for Vision Transformers. arXiv Prepr. arXiv2112.01686 (2021).
+ 38 Han, K. et al. A survey on Vision Transformer. IEEE Trans. Pattern Anal. Mach. Intell. https:// doi. org/ 10. 1109/ TPAMI. 2022. 31522 
+47 (2022).
+ 39. Jiang, Z. et al. Computer-aided diagnosis of retinopathy based on Vision Transformer. J. Innov. Opt. Health Sci. 15.02, 2250009 
+(2022).
+ 40. Chen, J. et al. Channel and spatial attention based deep object co-segmentation. Knowledge-Based Syst. 211, 106550 (2021).
+ 41. Zhang, Y ., Fang, M. & Wang, N. Channel-spatial attention network for fewshot classification. PLoS One 14, 1–16 (2019).
+ 42. Bastidas, A. A. & Tang, H. Channel attention networks. IEEE Comput. Soc. Conf. Comput. Vis. Pattern Recognit. Work. 2019-June, 
+881–888 (2019).
+ 43. Singh, S. et al. Hybrid models for breast cancer detection via transfer learning technique. Comput. Mater. Contin. 74, 3063–3083 
+(2022).
+ 44. Seemendra, A., Singh, R. & Singh, S. Breast cancer classification using transfer learning. Lect. Notes Electr. Eng. 694, 425–436 
+(2021).
+ 45. Jiang, J. COVID-19 detection in chest X-ray images using swin-transformer and transformer in transformer.
+ 46. Chen, W . et al. A simple single-scale Vision Transformer for object detection and instance segmentation. in Lect. Notes Comput. 
+Sci. (including Subser. Lect. Notes Artif. Intell. Lect. Notes Bioinformatics) 13670 LNCS, 711–727 (2022).
+ 47. Goldberg, X. Introduction to semi-supervised learning. Synth. Lect. Artif. Intell. Mach. Learn. https:// doi. org/ 10. 2200/ S0019 6ED1V 
+01Y20 0906A IM006 (2009).
+ 48. Liu, X. et al. Self-supervised learning: Generative or contrastive. IEEE Trans. Knowl. Data Eng. 35.1, 857–876 (2021).
+ 49. Caron, M. et al. Emerging properties in self-supervised Vision Transformers. in Proc. IEEE Int. Conf. Comput. Vis. 9630–9640 
+(2021). https:// doi. org/ 10. 1109/ ICCV4 8922. 2021. 00951.
+ 50. Akbari, H. et al. V ATT: Transformers for multimodal self-supervised learning from raw video, audio and text. Adv. Neural Inf. 
+Process. Syst. 29, 24206–24221 (2021).
+ 51. Li, W . et al. SepViT: Separable Vision Transformer. (2022).
+ 52. Mangalam, K. et al. Reversible Vision Transformers. Proc. IEEE Comput. Soc. Conf. Comput. Vis. Pattern Recognit. 2022-June, 
+10820–10830 (2022).
+ 53. Dosovitskiy, A. et al. An image is worth 16 × 16 words: Transformers for image recognition at scale. (2020).
+ 54. Korkmaz, Y ., Yurt, M., Dar, S. U. H., Özbey, M. & Cukur, T. Deep MRI reconstruction with generative Vision Transformers. in 
+Machine Learning for Medical Image Reconstruction: 4th International Workshop, MLMIR 2021, Held in Conjunction with MICCAI 
+2021, Strasbourg, France, October 1, 2021, Proceedings 4 54–64 (2021).
+ 55. Usman, M., Zia, T. & Tariq, A. Analyzing transfer learning of Vision Transformers for interpreting chest radiography. J. Digit. 
+Imaging. https:// doi. org/ 10. 1007/ s10278- 022- 00666-z (2022).
+ 56. Wu, H. et al. CvT: Introducing convolutions to Vision Transformers. Proc. IEEE Int. Conf. Comput. Vis. https:// doi. org/ 10. 1109/ 
+ICCV4 8922. 2021. 00009 (2021).
+ 57. Kermany, D., Zhang, K. & Goldbaum, M. Chest X-ray images (pneumonia). https:// data. mende ley. com/ datas ets/ rscbj br9sj/2
+ 58. Kermany, D. Large dataset of labeled optical coherence tomography (OCT) and chest X-ray images. Mendeley Data . 3.10.17632 
+(2018).
+ 59. M. Hassan. VGG16—Convolutional network for classification and detection. Neurohive  (2018). https:// neuro hive. io/ en/ popul 
+arnet works/ vgg16.
+ 60. Dey, N., Zhang, Y . D., Rajinikanth, V ., Pugalenthi, R. & Raja, N. S. M. Customized VGG19 architecture for pneumonia detection 
+in chest X-rays. Pattern Recognit. Lett. 143, 67–74 (2021).
+ 61. Elpeltagy, M. & Sallam, H. Automatic prediction of COVID-19 from chest images using modified ResNet50. Multimed. Tools Appl. 
+80.17 26451–26463 (2021).
+ 62. Zhang, Q. A novel ResNet101 model based on dense dilated convolution for image classification. SN Appl. Sci. 4, 1–13 (2022).
+ 63. Prabhakaran, A. K., Nair, J. J. & Sarath, S. Thermal facial expression recognition using modified ResNet152. in Lecture Notes in 
+Electrical Engineering vol. 736 LNEE (2021).
+ 64. Rahimzadeh, M. & Attar, A. A new modified deep convolutional neural network for detecting COVID-19 from X-ray images. 
+arXiv 19, 100360 (2020).
+ 65. Lee, H. C. & Aqil, A. F . Combination of transfer learning methods for kidney glomeruli image classification. Appl. Sci. 12.3, 1040 
+(2022).
+ 66. Albahli, S., Rauf, H. T., Algosaibi, A. & Balas, V . E. AI-driven deep CNN approach for multilabel pathology classification using 
+chest X-rays. PeerJ Comput. Sci. 7, 1–17 (2021).
+ 67. Jignesh Chowdary, G., Punn, N. S., Sonbhadra, S. K. & Agarwal, S. Face mask detection using transfer learning of inceptionV3. in 
+Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics) 
+vol. 12581 LNCS (2020).
+ 68. Mondal, M. R. H., Bharati, S. & Podder, P . CO-IRv2: Optimized InceptionResNetV2 for COVID-19 detection from chest CT 
+images. PLoS One 16.10, e0259179 (2021).
+ 69. Ezzat, D., Hassanien, A. ell & Ella, H. A. GSA-DenseNet121-COVID-19: A hybrid deep learning architecture for the diagnosis of 
+COVID-19 disease based on gravitational search optimization algorithm. Arxiv.Org (2020).
+ 70. U.N. Oktaviana & Y . Azhar. Garbage Classification Using Ensemble DenseNet169. J. RESTI (Rekayasa Sist. dan Teknol. Informasi). 
+5.6, 1207–1215 (2021).
+ 71. Adhinata, F . D., Rakhmadani, D. P ., Wibowo, M. & Jayadi, A. A deep learning using DenseNet201 to detect masked or non-masked 
+face. JUITA J. Inform. 9.1, 115–121 (2021).
+ 72. Y ang, G., He, Y ., Y ang, Y . & Xu, B. Fine-grained image classification for crop disease based on attention mechanism. Front. Plant 
+Sci. 11, 1–15 (2020).
+[Page 17]
+17
+Vol.:(0123456789)Scientific Reports |         (2024) 14:2487  | https://doi.org/10.1038/s41598-024-52703-2
+www.nature.com/scientificreports/
+ 73. Singh, S. & Tripathi, B. K. Pneumonia classification using quaternion deep learning. Multimed. Tools Appl. 81, 1743–1764 (2022).
+Author contributions
+All authors contributed equally to this work. The manuscript was reviewed by all authors.
+Competing interests 
+The authors declare no competing interests.
+Additional information
+Correspondence and requests for materials should be addressed to S.S.
+Reprints and permissions information is available at www.nature.com/reprints.
+Publisher’s note Springer Nature remains neutral with regard to jurisdictional claims in published maps and 
+institutional affiliations.
+Open Access  This article is licensed under a Creative Commons Attribution 4.0 International 
+License, which permits use, sharing, adaptation, distribution and reproduction in any medium or 
+format, as long as you give appropriate credit to the original author(s) and the source, provide a link to the 
+Creative Commons licence, and indicate if changes were made. The images or other third party material in this 
+article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the 
+material. If material is not included in the article’s Creative Commons licence and your intended use is not 
+permitted by statutory regulation or exceeds the permitted use, you will need to obtain permission directly from 
+the copyright holder. To view a copy of this licence, visit http:// creat iveco mmons. org/ licen ses/ by/4. 0/.
+© The Author(s) 2024
+
+--- END OF s41598-024-52703-2 (1) (1).pdf ---
+

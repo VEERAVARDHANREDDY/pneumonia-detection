@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+.env
+
+# ML Models
+*.pth
+*.pt
+
+# Datasets
+chest_xray/
+
+# Outputs
+comparison_results/
+inference_results/
+*.png
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
